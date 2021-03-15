@@ -1,0 +1,5 @@
+Sprint1 filter=lfs diff=lfs merge=lfs -text
+Sprint2 filter=lfs diff=lfs merge=lfs -text
+Sprint3 filter=lfs diff=lfs merge=lfs -text
+Projet_HuotVincent filter=lfs diff=lfs merge=lfs -text
+README.md filter=lfs diff=lfs merge=lfs -text
