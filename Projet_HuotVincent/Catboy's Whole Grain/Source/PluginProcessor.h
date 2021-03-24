@@ -1,7 +1,7 @@
 /*
   ==============================================================================
 
-    This file contains the basic framework code for a JUCE plugin processor.
+	This file contains the basic framework code for a JUCE plugin processor.
 
   ==============================================================================
 */
@@ -16,59 +16,70 @@
 class CWGAudioProcessor : public juce::AudioProcessor
 {
 public:
-    //==============================================================================
-    CWGAudioProcessor();
-    ~CWGAudioProcessor() override;
+	//==============================================================================
+	CWGAudioProcessor();
+	~CWGAudioProcessor() override;
 
-    //==============================================================================
-    void prepareToPlay(double sampleRate, int samplesPerBlock) override;
-    void releaseResources() override;
+	//==============================================================================
+	void prepareToPlay(double sampleRate, int samplesPerBlock) override;
+	void releaseResources() override;
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-    bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
+	bool isBusesLayoutSupported(const BusesLayout& layouts) const override;
 #endif
 
-    void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
+	void processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
 
-    //==============================================================================
-    juce::AudioProcessorEditor* createEditor() override;
-    bool hasEditor() const override;
+	//==============================================================================
+	juce::AudioProcessorEditor* createEditor() override;
+	bool hasEditor() const override;
 
-    //==============================================================================
-    const juce::String getName() const override;
+	//==============================================================================
+	const juce::String getName() const override;
 
-    bool acceptsMidi() const override;
-    bool producesMidi() const override;
-    bool isMidiEffect() const override;
-    double getTailLengthSeconds() const override;
+	bool acceptsMidi() const override;
+	bool producesMidi() const override;
+	bool isMidiEffect() const override;
+	double getTailLengthSeconds() const override;
 
-    //==============================================================================
-    int getNumPrograms() override;
-    int getCurrentProgram() override;
-    void setCurrentProgram(int index) override;
-    const juce::String getProgramName(int index) override;
-    void changeProgramName(int index, const juce::String& newName) override;
+	//==============================================================================
+	int getNumPrograms() override;
+	int getCurrentProgram() override;
+	void setCurrentProgram(int index) override;
+	const juce::String getProgramName(int index) override;
+	void changeProgramName(int index, const juce::String& newName) override;
 
-    //==============================================================================
-    void getStateInformation(juce::MemoryBlock& destData) override;
-    void setStateInformation(const void* data, int sizeInBytes) override;
+	//==============================================================================
+	void getStateInformation(juce::MemoryBlock& destData) override;
+	void setStateInformation(const void* data, int sizeInBytes) override;
 
-    void loadFile();
-    void loadFile(const juce::String& path);
+	//User Variables ===============================================================
+	void loadFile();
+	void loadFile(const juce::String& path);
+	void switchLoop();
 
-    //gets and sets
-    int getNumSamplerSounds() { return pSampler.getNumSounds(); };
-    juce::AudioBuffer<float>& getWaveform() { return pWaveform; };
+	//gets and sets
+	juce::AudioBuffer<float>& getWaveform() { return pWaveform; };
+	std::atomic<bool>& isNotePlayed() { return pIsNotePlayed; };
+	int& getSampleCount() { return pBufferPos; };
+
+	bool hasFile = false;
 
 private:
-    juce::Synthesiser pSampler;
-    const int MAXVOICE{ 3 };
-    juce::AudioBuffer<float> pWaveform;
+	bool isLooping = false;
 
-    //manage (use .wav, .mp3, .flac, etc) and read file
-    juce::AudioFormatManager pFormatManager;
-    juce::AudioFormatReader* pFormatReader{ nullptr };
+	juce::AudioBuffer<float> pWaveform;
+	int pBufferPos = 0;
+	int pSampleLength = 0;
 
-    //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CWGAudioProcessor)
+	//manage (use .wav, .mp3, .flac, etc) and read file
+	juce::AudioFormatManager pFormatManager;
+	juce::AudioFormatReader* pFormatReader{ nullptr };
+
+	//Playhead
+	void updatePlayhead(int numSamples, juce::MidiBuffer& midiMessages);
+	std::atomic<bool> pIsNotePlayed{ false };
+	std::atomic<int> pSampleCount{ 0 };
+	//==============================================================================
+	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CWGAudioProcessor)
 };
