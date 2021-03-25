@@ -19,6 +19,15 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	btnLoop.onClick = [&]() {audioProcessor.switchLoop(); };
 	addAndMakeVisible(btnLoop);
 
+	//Master Knob
+	eMasterSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+	eMasterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eMasterSlider.setRange(.0f, 1.0f, 0.01f);
+	eMasterSlider.setValue(1);
+	eMasterSlider.addListener(this);
+	addAndMakeVisible(eMasterSlider);
+
+	//ADSR 
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
 	eAttackSlider.setRange(.0f, 5.0f, 0.01f);
@@ -87,6 +96,8 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 
 void CWGAudioProcessorEditor::resized()
 {
+	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
+
 	//ADSR Slider Placements
 	const auto sliderX = 0.6f,
 		sliderY = 0.5f,
@@ -103,6 +114,7 @@ void CWGAudioProcessorEditor::resized()
 	btnLoop.setBoundsRelative(0.1f, 0.0f, 0.1f, 0.1f);
 }
 
+//File management ==============================================
 bool CWGAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files) {
 
 	for (auto file : files) {
@@ -121,4 +133,10 @@ void CWGAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x
 		}
 	}
 	repaint();
+}
+
+void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
+	if (slider == &eMasterSlider) {
+		audioProcessor.pMaster = eMasterSlider.getValue();
+	}
 }

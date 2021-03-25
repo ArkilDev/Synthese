@@ -143,13 +143,13 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	}
 
 	if (hasFile) {
-		auto toBuffer = juce::jmin(buffer.getNumSamples(), pWaveform.getNumSamples() - pBufferPos);
+		auto nbSampleToBuffer = juce::jmin(buffer.getNumSamples(), pWaveform.getNumSamples() - pBufferPos);
 
 		for (auto channel = 0; channel < totalNumOutputChannels; ++channel) {
-			buffer.copyFrom(channel, 0, pWaveform, 0, pBufferPos, toBuffer);
+			buffer.addFrom(channel, 0, pWaveform, 0, pBufferPos, nbSampleToBuffer, pMaster);
 		}
 
-		pBufferPos += toBuffer;
+		pBufferPos += nbSampleToBuffer;
 
 		if (isLooping && pBufferPos == pWaveform.getNumSamples()) {
 			pBufferPos = 0;
@@ -191,7 +191,7 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 //User-made function ===========================================================
 
-//load file
+//File systems ========================================
 void CWGAudioProcessor::loadFile(const juce::String& path) {
 
 	//get file & reader

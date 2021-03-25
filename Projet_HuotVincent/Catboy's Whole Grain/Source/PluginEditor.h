@@ -14,7 +14,10 @@
 //==============================================================================
 /**
 */
-class CWGAudioProcessorEditor : public juce::AudioProcessorEditor, public juce::FileDragAndDropTarget
+class CWGAudioProcessorEditor :
+	public juce::AudioProcessorEditor,
+	public juce::FileDragAndDropTarget,
+	public juce::Slider::Listener
 {
 public:
 	CWGAudioProcessorEditor(CWGAudioProcessor&);
@@ -24,10 +27,12 @@ public:
 	void paint(juce::Graphics&) override;
 	void resized() override;
 
+	//File management
 	bool isInterestedInFileDrag(const juce::StringArray& files) override;
 	void filesDropped(const juce::StringArray& files, int x, int y) override;
 
-	void setTestText(std::string text);
+	//Slider management
+	void sliderValueChanged(juce::Slider* slider) override;
 
 private:
 	juce::TextButton btnLoad{ "browse" };
@@ -35,6 +40,9 @@ private:
 
 	std::vector<float> eSampleVal;
 	bool eUpdateWaveDisplay{ false };
+
+	juce::Slider eMasterSlider;
+	juce::Label eMasterLabel;
 
 	juce::Slider eAttackSlider, eDecaySlider, eSustainSlider, eReleaseSlider;
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;

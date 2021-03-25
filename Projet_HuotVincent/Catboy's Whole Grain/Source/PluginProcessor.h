@@ -60,13 +60,14 @@ public:
 
 	//gets and sets
 	juce::AudioBuffer<float>& getWaveform() { return pWaveform; };
-	std::atomic<bool>& isNotePlayed() { return pIsNotePlayed; };
 	int& getSampleCount() { return pBufferPos; };
 
-	bool hasFile = false;
+	void getMasterValue();
+	float pMaster{ 1.0f };
 
 private:
 	bool isLooping = false;
+	bool hasFile = false;
 
 	juce::AudioBuffer<float> pWaveform;
 	int pBufferPos = 0;
@@ -76,10 +77,6 @@ private:
 	juce::AudioFormatManager pFormatManager;
 	juce::AudioFormatReader* pFormatReader{ nullptr };
 
-	//Playhead
-	void updatePlayhead(int numSamples, juce::MidiBuffer& midiMessages);
-	std::atomic<bool> pIsNotePlayed{ false };
-	std::atomic<int> pSampleCount{ 0 };
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CWGAudioProcessor)
 };
