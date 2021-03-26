@@ -143,15 +143,30 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	}
 
 	if (hasFile) {
-		auto nbSampleToBuffer = juce::jmin(buffer.getNumSamples(), pWaveform.getNumSamples() - pBufferPos);
+		auto nbSampleToBuffer = 0;
+		while (nbSampleToBuffer <= 0) {
+			nbSampleToBuffer = juce::jmin(buffer.getNumSamples(), pWaveform.getNumSamples() - pBufferPos);
 
-		for (auto channel = 0; channel < totalNumOutputChannels; ++channel) {
-			buffer.addFrom(channel, 0, pWaveform, 0, pBufferPos, nbSampleToBuffer, pMaster);
+			//If the position is past the lenght of the file
+			if (nbSampleToBuffer <= 0) {
+				if (isLooping) {		//Reset position if looping and recalculate
+					pBufferPos = 0;
+				}
+				else {					//Else, end goto end of sample and send nothing to buffer
+					nbSampleToBuffer = 0;
+					pBufferPos = pWaveform.getNumSamples();
+					break;
+				}
+			}
 		}
 
-		pBufferPos += nbSampleToBuffer;
+		for (auto channel = 0; channel < totalNumOutputChannels; ++channel) {
+			buffer.addFrom(channel, 0, pWaveform, channel, pBufferPos, nbSampleToBuffer, pMaster);
+		}
 
-		if (isLooping && pBufferPos == pWaveform.getNumSamples()) {
+		pBufferPos += nbSampleToBuffer * pPitch;
+
+		if (isLooping && pBufferPos >= pWaveform.getNumSamples()) {
 			pBufferPos = 0;
 		}
 	}

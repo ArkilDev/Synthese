@@ -27,6 +27,15 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	eMasterSlider.addListener(this);
 	addAndMakeVisible(eMasterSlider);
 
+
+	//Pitch slider
+	ePitchSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+	ePitchSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePitchSlider.setRange(.01f, 10.0f, 0.01f);
+	ePitchSlider.setValue(1);
+	ePitchSlider.addListener(this);
+	addAndMakeVisible(ePitchSlider);
+
 	//ADSR 
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
@@ -97,6 +106,7 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 void CWGAudioProcessorEditor::resized()
 {
 	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
+	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
 
 	//ADSR Slider Placements
 	const auto sliderX = 0.6f,
@@ -136,7 +146,9 @@ void CWGAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x
 }
 
 void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
-	if (slider == &eMasterSlider) {
+	if (slider == &eMasterSlider)
 		audioProcessor.pMaster = eMasterSlider.getValue();
-	}
+
+	if (slider == &ePitchSlider)
+		audioProcessor.pPitch = ePitchSlider.getValue();
 }

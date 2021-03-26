@@ -62,8 +62,8 @@ public:
 	juce::AudioBuffer<float>& getWaveform() { return pWaveform; };
 	int& getSampleCount() { return pBufferPos; };
 
-	void getMasterValue();
 	float pMaster{ 1.0f };
+	float pPitch{ 1.0f };
 
 private:
 	bool isLooping = false;

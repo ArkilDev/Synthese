@@ -44,6 +44,9 @@ private:
 	juce::Slider eMasterSlider;
 	juce::Label eMasterLabel;
 
+	juce::Slider ePitchSlider;
+	juce::Label ePitchLabel;
+
 	juce::Slider eAttackSlider, eDecaySlider, eSustainSlider, eReleaseSlider;
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;
 
