@@ -143,12 +143,21 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	}
 
 	if (hasFile) {
-		float* fileBuffer;
+		float* fileBuffer = 0;
+		float currentVal = 0;
 
 		for (auto i = 0; i < buffer.getNumSamples(); ++i) {
 			for (auto channel = 0; channel < totalNumOutputChannels; ++channel) {
 				fileBuffer = pWaveform.getWritePointer(channel);
-				buffer.setSample(channel, i, fileBuffer[pBufferPos] * pMaster);
+
+				if (pBufferPos != std::trunc(pBufferPos)) {
+					currentVal = (fileBuffer[(int)std::floor(pBufferPos)] + fileBuffer[(int)std::ceil(pBufferPos)]) / 2;
+				}
+				else {
+					currentVal = fileBuffer[(int)pBufferPos];
+				}
+
+				buffer.setSample(channel, i, currentVal * pMaster);
 			}
 
 			pBufferPos += pPitch;
@@ -163,37 +172,6 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 			}
 		}
 	}
-
-	/*
-	if (hasFile) {
-		auto nbSampleToBuffer = 0;
-		while (nbSampleToBuffer <= 0) {
-			nbSampleToBuffer = juce::jmin(buffer.getNumSamples(), pWaveform.getNumSamples() - pBufferPos);
-
-			//If the position is past the lenght of the file
-			if (nbSampleToBuffer <= 0) {
-				if (isLooping) {		//Reset position if looping and recalculate
-					pBufferPos = 0;
-				}
-				else {					//Else, end goto end of sample and send nothing to buffer
-					nbSampleToBuffer = 0;
-					pBufferPos = pWaveform.getNumSamples();
-					break;
-				}
-			}
-		}
-
-		for (auto channel = 0; channel < totalNumOutputChannels; ++channel) {
-			buffer.addFrom(channel, 0, pWaveform, channel, pBufferPos, nbSampleToBuffer, pMaster);
-		}
-
-		pBufferPos += nbSampleToBuffer * pPitch;
-
-		if (isLooping && pBufferPos >= pWaveform.getNumSamples()) {
-			pBufferPos = 0;
-		}
-	}
-	*/
 }
 
 //==============================================================================
@@ -233,13 +211,16 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 //File systems ========================================
 void CWGAudioProcessor::loadFile(const juce::String& path) {
 
+	hasFile = false;
+
 	//get file & reader
 	auto file = juce::File(path);
 	pFormatReader = pFormatManager.createReaderFor(file);
 
-	//make buffer big enough
+	//make buffer big enough and clear buffer related variables
 	pSampleLength = static_cast<int>(pFormatReader->lengthInSamples);
 	pWaveform.setSize((int)pFormatReader->numChannels, pSampleLength);
+	pBufferPos = 0;
 
 	//Add file to buffer
 	pFormatReader->read(&pWaveform, 0, pSampleLength, 0, true, true);

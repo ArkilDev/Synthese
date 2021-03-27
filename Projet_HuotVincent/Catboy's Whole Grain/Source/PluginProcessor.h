@@ -60,7 +60,7 @@ public:
 
 	//gets and sets
 	juce::AudioBuffer<float>& getWaveform() { return pWaveform; };
-	int& getSampleCount() { return pBufferPos; };
+	float& getSampleCount() { return pBufferPos; };
 
 	float pMaster{ 1.0f };
 	float pPitch{ 1.0f };
@@ -70,7 +70,7 @@ private:
 	bool hasFile = false;
 
 	juce::AudioBuffer<float> pWaveform;
-	int pBufferPos = 0;
+	float pBufferPos = 0;
 	int pSampleLength = 0;
 
 	//manage (use .wav, .mp3, .flac, etc) and read file
