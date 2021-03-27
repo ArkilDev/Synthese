@@ -143,6 +143,29 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	}
 
 	if (hasFile) {
+		float* fileBuffer;
+
+		for (auto i = 0; i < buffer.getNumSamples(); ++i) {
+			for (auto channel = 0; channel < totalNumOutputChannels; ++channel) {
+				fileBuffer = pWaveform.getWritePointer(channel);
+				buffer.setSample(channel, i, fileBuffer[pBufferPos] * pMaster);
+			}
+
+			pBufferPos += pPitch;
+
+			if (pBufferPos >= pWaveform.getNumSamples()) {
+				if (isLooping) {
+					pBufferPos = 0;
+				}
+				else {
+					pBufferPos = pWaveform.getNumSamples();
+				}
+			}
+		}
+	}
+
+	/*
+	if (hasFile) {
 		auto nbSampleToBuffer = 0;
 		while (nbSampleToBuffer <= 0) {
 			nbSampleToBuffer = juce::jmin(buffer.getNumSamples(), pWaveform.getNumSamples() - pBufferPos);
@@ -170,6 +193,7 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 			pBufferPos = 0;
 		}
 	}
+	*/
 }
 
 //==============================================================================
