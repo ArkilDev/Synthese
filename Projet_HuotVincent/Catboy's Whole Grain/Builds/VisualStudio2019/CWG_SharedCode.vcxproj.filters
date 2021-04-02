@@ -2,8 +2,17 @@
 
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="CWG\Source\Grains">
+      <UniqueIdentifier>{72C13424-FBD2-44CB-CA5B-4011172EFFA6}</UniqueIdentifier>
+    </Filter>
     <Filter Include="CWG\Source">
       <UniqueIdentifier>{68957852-D41E-0142-519F-639E061FBFCC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CWG\Ressources\images">
+      <UniqueIdentifier>{CA28D486-7721-E169-76A2-5F93E083EC69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="CWG\Ressources">
+      <UniqueIdentifier>{AA2C5526-B756-93E6-50EE-C7EC563D49C6}</UniqueIdentifier>
     </Filter>
     <Filter Include="CWG">
       <UniqueIdentifier>{1F4F6CD1-6F30-0775-A046-18484D28CBD0}</UniqueIdentifier>
@@ -430,6 +439,15 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Source\Grains\GrainController.cpp">
+      <Filter>CWG\Source\Grains</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Grains\GrainProcessor.cpp">
+      <Filter>CWG\Source\Grains</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\MidiProcessor.cpp">
+      <Filter>CWG\Source</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp">
       <Filter>CWG\Source</Filter>
     </ClCompile>
@@ -2446,6 +2464,9 @@
     <ClCompile Include="..\..\..\..\..\..\..\Program Files\JUCE-6.0.7\modules\juce_gui_extra\juce_gui_extra.mm">
       <Filter>JUCE Modules\juce_gui_extra</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\JuceLibraryCode\BinaryData.cpp">
+      <Filter>JUCE Library Code</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_audio_basics.cpp">
       <Filter>JUCE Library Code</Filter>
     </ClCompile>
@@ -2484,6 +2505,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Grains\GrainController.h">
+      <Filter>CWG\Source\Grains</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Grains\GrainProcessor.h">
+      <Filter>CWG\Source\Grains</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\MidiProcessor.h">
+      <Filter>CWG\Source</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\PluginProcessor.h">
       <Filter>CWG\Source</Filter>
     </ClInclude>
@@ -4740,6 +4770,9 @@
     <ClInclude Include="..\..\..\..\..\..\..\Program Files\JUCE-6.0.7\modules\juce_gui_extra\juce_gui_extra.h">
       <Filter>JUCE Modules\juce_gui_extra</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\JuceLibraryCode\BinaryData.h">
+      <Filter>JUCE Library Code</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\JuceLibraryCode\JuceHeader.h">
       <Filter>JUCE Library Code</Filter>
     </ClInclude>
@@ -4748,6 +4781,9 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Ressources\images\logo.png">
+      <Filter>CWG\Ressources\images</Filter>
+    </None>
     <None Include="..\..\..\..\..\..\..\Program Files\JUCE-6.0.7\modules\juce_audio_devices\native\oboe\CMakeLists.txt">
       <Filter>JUCE Modules\juce_audio_devices\native\oboe</Filter>
     </None>

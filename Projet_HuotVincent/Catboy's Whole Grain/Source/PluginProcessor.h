@@ -9,6 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include "./Grains/GrainController.h"
 
 //==============================================================================
 /**
@@ -53,29 +54,22 @@ public:
 	void getStateInformation(juce::MemoryBlock& destData) override;
 	void setStateInformation(const void* data, int sizeInBytes) override;
 
-	//User Variables ===============================================================
+	//==============================================================================
 	void loadFile();
 	void loadFile(const juce::String& path);
 	void switchLoop();
+	juce::AudioBuffer<float> getFileBuffer() { return pFileBuffer; };
 
-	//gets and sets
-	juce::AudioBuffer<float>& getWaveform() { return pWaveform; };
-	float& getSampleCount() { return pBufferPos; };
-
-	float pMaster{ 1.0f };
-	float pPitch{ 1.0f };
+	//Passed from PluginEditor to GrainController
+	CWGGrainController controller;
 
 private:
-	bool isLooping = false;
-	bool hasFile = false;
+	juce::Synthesiser pSynth;
 
-	juce::AudioBuffer<float> pWaveform;
-	float pBufferPos = 0;
-	int pSampleLength = 0;
-
-	//manage (use .wav, .mp3, .flac, etc) and read file
 	juce::AudioFormatManager pFormatManager;
-	juce::AudioFormatReader* pFormatReader{ nullptr };
+	juce::AudioFormatReader* pFormatReader;
+	juce::AudioBuffer<float> pFileBuffer;
+	bool hasFile = false;
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CWGAudioProcessor)

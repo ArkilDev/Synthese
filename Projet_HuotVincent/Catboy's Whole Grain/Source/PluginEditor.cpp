@@ -8,11 +8,19 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "MidiProcessor.h"
 
 //==============================================================================
 CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	: AudioProcessorEditor(&p), audioProcessor(p)
 {
+	//Logo
+	auto logoImage = juce::ImageCache::getFromMemory(BinaryData::logo_png, BinaryData::logo_pngSize);
+
+	if (!logoImage.isNull())
+		eLogoImage.setImage(logoImage, juce::RectanglePlacement::stretchToFit);
+	addAndMakeVisible(eLogoImage);
+
 	btnLoad.onClick = [&]() {audioProcessor.loadFile(); };
 	addAndMakeVisible(btnLoad);
 
@@ -31,7 +39,7 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	//Pitch slider
 	ePitchSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	ePitchSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	ePitchSlider.setRange(.01f, 10.0f, 0.01f);
+	ePitchSlider.setRange(.0625f, 64.0f, 0.005f);
 	ePitchSlider.setValue(1);
 	ePitchSlider.addListener(this);
 	addAndMakeVisible(ePitchSlider);
@@ -79,8 +87,8 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 		eSampleVal.clear();
 
 		//draw waveform
-		auto wave = audioProcessor.getWaveform();
-		auto ratio = wave.getNumSamples() / getWidth();
+		auto wave = audioProcessor.getFileBuffer();
+		float ratio = wave.getNumSamples() / getWidth();
 		auto buffer = wave.getReadPointer(0);
 
 		//scale x axis
@@ -99,12 +107,12 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 
 		eUpdateWaveDisplay = false;
 	}
-
-	g.drawText(std::to_string(audioProcessor.getSampleCount()), 0, 50, 50, 50, juce::Justification::centred, true);
 }
 
 void CWGAudioProcessorEditor::resized()
 {
+	eLogoImage.setBoundsRelative(0.01f, 0.8f, 0.1f, 0.2f);
+
 	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
 	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
 
@@ -126,7 +134,6 @@ void CWGAudioProcessorEditor::resized()
 
 //File management ==============================================
 bool CWGAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files) {
-
 	for (auto file : files) {
 		if (file.contains(".wav") || file.contains(".mp3") || file.contains(".aif")) {
 			return true;
@@ -147,8 +154,8 @@ void CWGAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x
 
 void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 	if (slider == &eMasterSlider)
-		audioProcessor.pMaster = eMasterSlider.getValue();
+		audioProcessor.controller.master = eMasterSlider.getValue();
 
 	if (slider == &ePitchSlider)
-		audioProcessor.pPitch = ePitchSlider.getValue();
+		audioProcessor.controller.pitch = ePitchSlider.getValue();
 }

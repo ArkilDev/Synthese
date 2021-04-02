@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "MidiProcessor.h"
 
 //==============================================================================
 /**
@@ -35,11 +36,14 @@ public:
 	void sliderValueChanged(juce::Slider* slider) override;
 
 private:
+	juce::AudioBuffer<float> eBuffer;
+	juce::ImageComponent eLogoImage;
+
 	juce::TextButton btnLoad{ "browse" };
 	juce::ToggleButton btnLoop{ "Loop" };
 
 	std::vector<float> eSampleVal;
-	bool eUpdateWaveDisplay{ false };
+	bool eUpdateWaveDisplay = false;
 
 	juce::Slider eMasterSlider;
 	juce::Label eMasterLabel;

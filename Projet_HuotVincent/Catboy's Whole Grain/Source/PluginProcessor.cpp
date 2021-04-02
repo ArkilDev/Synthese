@@ -8,6 +8,7 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "MidiProcessor.h"
 #include <iostream>
 
 //==============================================================================
@@ -138,38 +139,13 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	auto totalNumInputChannels = getTotalNumInputChannels();
 	auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-	for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i) {
-		buffer.clear(i, 0, buffer.getNumSamples());
-	}
-
 	if (hasFile) {
-		float* fileBuffer = 0;
-		float currentVal = 0;
+		//temporary buffer to copy from pGrainController more safely
+		auto tempBuffer = controller.getProcessedBuffer(&buffer, &midiMessages);
 
-		for (auto i = 0; i < buffer.getNumSamples(); ++i) {
-			for (auto channel = 0; channel < totalNumOutputChannels; ++channel) {
-				fileBuffer = pWaveform.getWritePointer(channel);
-
-				if (pBufferPos != std::trunc(pBufferPos)) {
-					currentVal = (fileBuffer[(int)std::floor(pBufferPos)] + fileBuffer[(int)std::ceil(pBufferPos)]) / 2;
-				}
-				else {
-					currentVal = fileBuffer[(int)pBufferPos];
-				}
-
-				buffer.setSample(channel, i, currentVal * pMaster);
-			}
-
-			pBufferPos += pPitch;
-
-			if (pBufferPos >= pWaveform.getNumSamples()) {
-				if (isLooping) {
-					pBufferPos = 0;
-				}
-				else {
-					pBufferPos = pWaveform.getNumSamples();
-				}
-			}
+		for (int i = 0; i < totalNumOutputChannels; ++i) {
+			buffer.clear(i, 0, buffer.getNumSamples());
+			buffer.copyFrom(i, 0, tempBuffer.getReadPointer(i), buffer.getNumSamples(), 1);
 		}
 	}
 }
@@ -208,22 +184,16 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 //User-made function ===========================================================
 
-//File systems ========================================
-void CWGAudioProcessor::loadFile(const juce::String& path) {
-
-	hasFile = false;
-
-	//get file & reader
-	auto file = juce::File(path);
-	pFormatReader = pFormatManager.createReaderFor(file);
+//File systems
+void CWGAudioProcessor::loadFile(const juce::String& filePath) {
+	pFormatReader = pFormatManager.createReaderFor(filePath);
 
 	//make buffer big enough and clear buffer related variables
-	pSampleLength = static_cast<int>(pFormatReader->lengthInSamples);
-	pWaveform.setSize((int)pFormatReader->numChannels, pSampleLength);
-	pBufferPos = 0;
+	pFileBuffer.setSize((int)pFormatReader->numChannels, (int)pFormatReader->lengthInSamples);
 
 	//Add file to buffer
-	pFormatReader->read(&pWaveform, 0, pSampleLength, 0, true, true);
+	pFormatReader->read(&pFileBuffer, 0, pFileBuffer.getNumSamples(), 0, true, true);
+	controller.instantiate(pFileBuffer);
 	hasFile = true;
 }
 
@@ -237,5 +207,5 @@ void CWGAudioProcessor::loadFile() {
 }
 
 void CWGAudioProcessor::switchLoop() {
-	isLooping = !isLooping;
+	controller.switchLoop();
 }
