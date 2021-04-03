@@ -17,5 +17,6 @@ private:
 	juce::MidiBuffer midiMessages;
 	juce::MidiBuffer::Iterator* mIt;
 	juce::MidiMessage currentMessage;
+	int currentMidiNote = 0;
 	int samplePos = 0;
 };

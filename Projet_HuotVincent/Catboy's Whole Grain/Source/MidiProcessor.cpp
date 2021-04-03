@@ -12,14 +12,15 @@ float* CWGMidiProcessor::process() {
 
 	while (mIt->getNextEvent(currentMessage, samplePos)) {
 		if (currentMessage.isNoteOn()) {
-
+			if (currentMidiNote != currentMessage.getNoteNumber())
+				DBG("lol");
 		}
 		else if (currentMessage.isNoteOff()) {
 
 		}
 	}
 
-	return info[0];
+	return 0;
 }
 
 bool CWGMidiProcessor::isNotePressed() {

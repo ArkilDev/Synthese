@@ -99,6 +99,7 @@ void CWGAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 {
 	// Use this method as the place to do any pre-playback
 	// initialisation that you need..
+	controller.setSampleRate(sampleRate);
 }
 
 void CWGAudioProcessor::releaseResources()
@@ -140,8 +141,8 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	auto totalNumOutputChannels = getTotalNumOutputChannels();
 
 	if (hasFile) {
-		//temporary buffer to copy from pGrainController more safely
-		auto tempBuffer = controller.getProcessedBuffer(&buffer, &midiMessages);
+		//use a temporary buffer to avoid processing the buffer twice and keeping 
+		auto tempBuffer = controller.getProcessedBuffer(&buffer, midiMessages);
 
 		for (int i = 0; i < totalNumOutputChannels; ++i) {
 			buffer.clear(i, 0, buffer.getNumSamples());
