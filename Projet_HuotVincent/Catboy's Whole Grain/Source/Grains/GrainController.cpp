@@ -2,22 +2,15 @@
 #include <iostream>
 
 CWGGrainController::CWGGrainController() {
+	voices.clear();
 }
 
 void CWGGrainController::instantiate(juce::AudioBuffer<float>& buffer) {
 	cFileBuffer.makeCopyOf(buffer, true);
-	cBufferPos = 0;
-	cMaxBufferPos = cFileBuffer.getNumSamples();
 }
 
 juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer& midi) {
-
-	adsrParam.attack = 1.0f;;
-	adsrParam.decay = 1.0f;
-	adsrParam.sustain = 1.0f;
-	adsrParam.release = 1.0f;
-	adsr.setParameters(adsrParam);
-
+	DBG(voices.size());
 	cProcessedBuffer.clear();
 	cProcessedBuffer.setSize(buffer->getNumChannels(), buffer->getNumSamples());
 
@@ -26,39 +19,42 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 
 	while (mIt->getNextEvent(currentMessage, samplePos)) {
 		if (currentMessage.isNoteOn()) {
-			adsr.noteOn();
-			cBufferPos = 0;
+			double notePitch = pitch + std::pow(2.0, currentMessage.getNoteNumber() / 12.0);
+			voices.add(new CWGGrainProcessor(cFileBuffer, currentMessage.getNoteNumber(), notePitch, adsrParam, sampleRate));
 		}
 
 		if (currentMessage.isNoteOff()) {
-			adsr.noteOff();
+			for (auto* grain : voices) {
+				if (currentMessage.getNoteNumber() == grain->getNote())
+					grain->adsr.noteOff();
+			}
 		}
 	}
 
-	float* filePointer = 0;
-	float currentVal = 0;
-	for (auto i = 0; i < buffer->getNumSamples(); ++i) {
-		for (auto channel = 0; channel < buffer->getNumChannels(); ++channel) {
-			filePointer = cFileBuffer.getWritePointer(channel);
+	if (!voices.isEmpty()) {
+		for (auto* grain : voices)
+		{
+			grain->process(cProcessedBuffer);
 
-			if (cBufferPos != std::trunc(cBufferPos)) {
-				currentVal = (filePointer[(int)std::floor(cBufferPos)] + filePointer[(int)std::ceil(cBufferPos)]) / 2;
+			if (grain->getBufferPos() >= cFileBuffer.getNumSamples()) {
+				if (isLooping) {
+					grain->setBufferPos(0);
+				}
+				else {
+					grain->setBufferPos(cFileBuffer.getNumSamples());
+				}
 			}
-			else {
-				currentVal = filePointer[(int)cBufferPos];
-			}
 
-			cProcessedBuffer.setSample(channel, i, currentVal * (master * adsr.getNextSample()));
-		}
+			if (!grain->adsr.isActive())
+				voices.removeObject(grain);
 
-		cBufferPos += pitch;
-
-		if (cBufferPos >= cFileBuffer.getNumSamples()) {
-			if (isLooping) {
-				cBufferPos = 0;
-			}
-			else {
-				cBufferPos = cFileBuffer.getNumSamples();
+			if (grain->getBufferPos() >= cFileBuffer.getNumSamples()) {
+				if (isLooping) {
+					grain->setBufferPos(0);
+				}
+				else {
+					voices.removeObject(grain);
+				}
 			}
 		}
 	}
@@ -71,7 +67,6 @@ void CWGGrainController::setADSR(float attack, float decay, float sustain, float
 	adsrParam.decay = decay;
 	adsrParam.sustain = sustain;
 	adsrParam.release = release;
-	adsr.setParameters(adsrParam);
 }
 
 void CWGGrainController::switchLoop() {

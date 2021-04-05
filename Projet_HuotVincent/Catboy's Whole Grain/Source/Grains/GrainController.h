@@ -1,6 +1,7 @@
 #pragma once
 #include <JuceHeader.h>
 #include "../Source/MidiProcessor.h"
+#include "../Grains/GrainProcessor.h"
 
 class CWGGrainController {
 public:
@@ -12,20 +13,23 @@ public:
 
 	//gets and sets
 	juce::AudioBuffer<float>& getWaveform() { return cFileBuffer; };
-	float& getSampleCount() { return cBufferPos; };
-	void setSampleRate(double rate) { sampleRate = rate; adsr.setSampleRate(rate); };
+	void setSampleRate(double rate) { sampleRate = rate; };
 	void setADSR(float attack, float decay, float sustain, float release);
 
 	//Controls
 	float pitch = 1;
 	float master = 1;
-	juce::ADSR adsr;
 
 private:
+	//OwnedArray is an array made by JUCE specifically made to hold Objects
+	//Many parts of the code inspired directely from juce::Synthesiser class
+	juce::OwnedArray<CWGGrainProcessor> voices;
+
 	CWGMidiProcessor cMidiProcessor;
 	juce::MidiBuffer midiMessages;
 	juce::MidiBuffer::Iterator* mIt;
 	juce::MidiMessage currentMessage;
+	double lastNoteHz = 440;
 	int samplePos = 0;
 
 	double sampleRate;
@@ -34,8 +38,6 @@ private:
 	juce::AudioBuffer<float> cProcessedBuffer;
 
 	bool isLooping = false;
-	float cBufferPos = 0; //Buffer position is in sample, which is an int, but float is used when pitch shifting occurs
-	int cMaxBufferPos = 0;
 
 	juce::ADSR::Parameters adsrParam;
 };
