@@ -18,7 +18,8 @@
 class CWGAudioProcessorEditor :
 	public juce::AudioProcessorEditor,
 	public juce::FileDragAndDropTarget,
-	public juce::Slider::Listener
+	public juce::Slider::Listener,
+	public juce::Timer
 {
 public:
 	CWGAudioProcessorEditor(CWGAudioProcessor&);
@@ -35,8 +36,12 @@ public:
 	//Slider management
 	void sliderValueChanged(juce::Slider* slider) override;
 
+	//Timer
+	void timerCallback() override;
+
 private:
-	juce::AudioBuffer<float> eBuffer;
+	juce::Path eWaveform;
+
 	juce::ImageComponent eLogoImage;
 
 	juce::TextButton btnLoad{ "browse" };
@@ -45,11 +50,8 @@ private:
 	std::vector<float> eSampleVal;
 	bool eUpdateWaveDisplay = false;
 
-	juce::Slider eMasterSlider;
-	juce::Label eMasterLabel;
-
-	juce::Slider ePitchSlider;
-	juce::Label ePitchLabel;
+	juce::Slider eMasterSlider, ePitchSlider;
+	juce::Label eMasterLabel, ePitchLabel;
 
 	juce::Slider eAttackSlider, eDecaySlider, eSustainSlider, eReleaseSlider;
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;

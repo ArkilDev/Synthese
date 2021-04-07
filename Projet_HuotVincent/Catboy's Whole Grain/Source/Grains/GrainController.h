@@ -15,15 +15,17 @@ public:
 	juce::AudioBuffer<float>& getWaveform() { return cFileBuffer; };
 	void setSampleRate(double rate) { sampleRate = rate; };
 	void setADSR(float attack, float decay, float sustain, float release);
+	void setMaster(float x) { master = x; };
+	void setPitch(float x);
 
-	//Controls
-	float pitch = 1;
-	float master = 1;
-
-private:
 	//OwnedArray is an array made by JUCE specifically made to hold Objects
 	//Many parts of the code inspired directely from juce::Synthesiser class
 	juce::OwnedArray<CWGGrainProcessor> voices;
+
+private:
+	//Controls
+	float pitch = 0;
+	float master = 1;
 
 	CWGMidiProcessor cMidiProcessor;
 	juce::MidiBuffer midiMessages;
@@ -40,4 +42,6 @@ private:
 	bool isLooping = false;
 
 	juce::ADSR::Parameters adsrParam;
+
+	double getNotePitch(int note);
 };

@@ -10,7 +10,6 @@ void CWGGrainController::instantiate(juce::AudioBuffer<float>& buffer) {
 }
 
 juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer& midi) {
-	DBG(voices.size());
 	cProcessedBuffer.clear();
 	cProcessedBuffer.setSize(buffer->getNumChannels(), buffer->getNumSamples());
 
@@ -19,7 +18,7 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 
 	while (mIt->getNextEvent(currentMessage, samplePos)) {
 		if (currentMessage.isNoteOn()) {
-			double notePitch = pitch + std::pow(2.0, currentMessage.getNoteNumber() / 12.0);
+			double notePitch = pitch + getNotePitch(currentMessage.getNoteNumber());
 			voices.add(new CWGGrainProcessor(cFileBuffer, currentMessage.getNoteNumber(), notePitch, adsrParam, sampleRate));
 		}
 
@@ -71,4 +70,15 @@ void CWGGrainController::setADSR(float attack, float decay, float sustain, float
 
 void CWGGrainController::switchLoop() {
 	isLooping = !isLooping;
+}
+
+void CWGGrainController::setPitch(float x) {
+	pitch = x;
+	for (auto* grain : voices) {
+		grain->setPitch(pitch + getNotePitch(grain->getNote()));
+	}
+}
+
+double CWGGrainController::getNotePitch(int note) {
+	return (std::pow(2.0, note / 12.0)) / 32;
 }

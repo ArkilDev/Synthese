@@ -12,6 +12,7 @@ public:
 	float getBufferPos() { return gBufferPos; };
 	void setBufferPos(float position) { gBufferPos = position; };
 	int getNote() { return gNote; };
+	void setPitch(double x) { gNotePitch = x; };
 
 	juce::ADSR adsr;
 

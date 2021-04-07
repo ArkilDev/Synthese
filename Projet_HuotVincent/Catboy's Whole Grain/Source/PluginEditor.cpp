@@ -14,6 +14,8 @@
 CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	: AudioProcessorEditor(&p), audioProcessor(p)
 {
+	startTimerHz(30);
+
 	//Logo
 	auto logoImage = juce::ImageCache::getFromMemory(BinaryData::logo_png, BinaryData::logo_pngSize);
 
@@ -39,7 +41,7 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	//Pitch slider
 	ePitchSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	ePitchSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	ePitchSlider.setRange(-1.0f, 10.0f, 0.01f);
+	ePitchSlider.setRange(.0f, 1.0f, 0.01f);
 	ePitchSlider.setValue(0);
 	ePitchSlider.addListener(this);
 	addAndMakeVisible(ePitchSlider);
@@ -51,9 +53,6 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	eAttackSlider.addListener(this);
 	addAndMakeVisible(eAttackSlider);
 
-	eAttackLabel.setFont(10.0f);
-	eAttackLabel.setText("Attack", juce::NotificationType::dontSendNotification);
-
 	eDecaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
 	eDecaySlider.setRange(.0f, 5.0f, 0.01f);
@@ -62,7 +61,8 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	eSustainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eSustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eSustainSlider.setRange(.0f, 5.0f, 0.01f);
+	eSustainSlider.setRange(.0f, 1.0f, 0.01f);
+	eSustainSlider.setValue(1);
 	eSustainSlider.addListener(this);
 	addAndMakeVisible(eSustainSlider);
 
@@ -77,6 +77,7 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 CWGAudioProcessorEditor::~CWGAudioProcessorEditor()
 {
+	stopTimer();
 }
 
 //==============================================================================
@@ -86,14 +87,15 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 	g.setColour(juce::Colours::white);
 	g.setFont(15.0f);
 
+	//get waveform
+	auto wave = audioProcessor.getFileBuffer();
+	float ratio = wave.getNumSamples() / getWidth();
+
+
 	if (eUpdateWaveDisplay) {
-		juce::Path p;
+		auto buffer = wave.getReadPointer(0);
 		eSampleVal.clear();
 
-		//draw waveform
-		auto wave = audioProcessor.getFileBuffer();
-		float ratio = wave.getNumSamples() / getWidth();
-		auto buffer = wave.getReadPointer(0);
 
 		//scale x axis
 		for (int i = 0; i < wave.getNumSamples(); i += ratio) {
@@ -101,15 +103,25 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 		}
 
 		//scale y axis and draw path
-		p.startNewSubPath(0, getHeight() / 2);
+		eWaveform.startNewSubPath(0, getHeight() / 2);
 		for (int i = 0; i < eSampleVal.size(); ++i) {
 			auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0); //Map amplitude from (-1, 1) to (maxHeight, minHeight)
-			p.lineTo(i, point);
+			eWaveform.lineTo(i, point);
 		}
 
-		g.strokePath(p, juce::PathStrokeType(2));
 
 		eUpdateWaveDisplay = false;
+	}
+	g.strokePath(eWaveform, juce::PathStrokeType(2));
+
+	if (audioProcessor.isFileLoaded()) {
+		if (audioProcessor.controller.voices.size() != 0) {
+			for (auto* voice : audioProcessor.controller.voices) {
+				auto playHeadPosition = juce::jmap<int>(std::floor(voice->getBufferPos()), 0, audioProcessor.getFileBuffer().getNumSamples(), 0, getWidth());
+				g.setColour(juce::Colours::blue);
+				g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
+			}
+		}
 	}
 }
 
@@ -121,8 +133,8 @@ void CWGAudioProcessorEditor::resized()
 	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
 
 	//ADSR Slider Placements
-	const auto sliderX = 0.6f,
-		sliderY = 0.5f,
+	const auto sliderX = 0.72f,
+		sliderY = 0.65f,
 		sliderWidth = 0.07f,
 		sliderHeight = 0.35f;
 
@@ -157,10 +169,10 @@ void CWGAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x
 
 void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 	if (slider == &eMasterSlider)
-		audioProcessor.controller.master = eMasterSlider.getValue();
+		audioProcessor.controller.setMaster(eMasterSlider.getValue());
 
 	if (slider == &ePitchSlider)
-		audioProcessor.controller.pitch = ePitchSlider.getValue();
+		audioProcessor.controller.setPitch(ePitchSlider.getValue());
 
 	//ADSR
 	if (slider == &eAttackSlider || slider == &eDecaySlider
@@ -169,4 +181,8 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 			eDecaySlider.getValue(),
 			eSustainSlider.getValue(),
 			eReleaseSlider.getValue());
+}
+
+void CWGAudioProcessorEditor::timerCallback() {
+	repaint();
 }
