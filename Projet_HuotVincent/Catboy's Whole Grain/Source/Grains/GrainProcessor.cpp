@@ -15,7 +15,7 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
 	float* filePointer = 0;
 	float currentVal = 0;
 	for (int i = 0; i < buffer.getNumSamples(); ++i) {
-		if (gBufferPos <= gFileBuffer.getNumSamples()) {
+		if (gBufferPos <= gFileBuffer.getNumSamples() && gBufferPos - start < length * sampleRate /1000) {
 			for (auto channel = 0; channel < buffer.getNumChannels(); ++channel) {
 				filePointer = gFileBuffer.getWritePointer(channel);
 
@@ -29,6 +29,10 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
 				buffer.setSample(channel, i, buffer.getSample(channel, i) + (currentVal * adsr.getNextSample()));
 			}
 			gBufferPos += gNotePitch;
+
+		}
+		else {
+			gBufferPos = start;
 		}
 	}
 }

@@ -20,6 +20,7 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 		if (currentMessage.isNoteOn()) {
 			double notePitch = pitch + getNotePitch(currentMessage.getNoteNumber());
 			voices.add(new CWGGrainProcessor(cFileBuffer, currentMessage.getNoteNumber(), notePitch, adsrParam, sampleRate, grainLength));
+			voices.getLast()->setStart(std::floor(startRatio * cFileBuffer.getNumSamples()));
 		}
 
 		if (currentMessage.isNoteOff()) {
@@ -34,6 +35,7 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 		for (auto* grain : voices)
 		{
 			grain->process(cProcessedBuffer);
+			cProcessedBuffer.applyGain(master);
 
 			if (grain->getBufferPos() >= cFileBuffer.getNumSamples()) {
 				if (isLooping) {

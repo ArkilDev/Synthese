@@ -40,9 +40,11 @@ public:
 	void timerCallback() override;
 
 private:
-	juce::Path eWaveform;
 
 	juce::ImageComponent eLogoImage;
+
+	juce::Rectangle<float> waveBox;
+	juce::Path eWaveform;
 
 	juce::TextButton btnLoad{ "browse" };
 	juce::ToggleButton btnLoop{ "Loop" };

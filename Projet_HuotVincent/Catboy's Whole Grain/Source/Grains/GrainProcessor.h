@@ -13,11 +13,13 @@ public:
 	void setBufferPos(float position) { gBufferPos = position; };
 	int getNote() { return gNote; };
 	void setPitch(double x) { gNotePitch = x; };
+	void setStart(int x) { start = x; gBufferPos = x; };
 
 	juce::ADSR adsr;
 
 private:
-	float gBufferPos = 0; //Buffer position is in sample, which is usually an int, but float is used when pitch shifting occurs
+	int start = 0;
+	float gBufferPos = start; //Buffer position is in sample, which is usually an int, but float is used when pitch shifting occurs
 
 	double sampleRate;
 	int gNote;

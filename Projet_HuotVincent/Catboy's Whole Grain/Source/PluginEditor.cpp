@@ -32,14 +32,14 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	//Main controls
 	eStartSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	eStartSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eStartSlider.setRange(.0f, 1.0f, 0.01f);
+	eStartSlider.setRange(.0f, 1.0f, 0.001f);
 	eStartSlider.setValue(0);
 	eStartSlider.addListener(this);
 	addAndMakeVisible(eStartSlider);
 
 	eMasterSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	eMasterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eMasterSlider.setRange(.0f, 1.0f, 0.1f);
+	eMasterSlider.setRange(.0f, 1.0f, 0.01f);
 	eMasterSlider.setValue(1);
 	eMasterSlider.addListener(this);
 	addAndMakeVisible(eMasterSlider);
@@ -107,6 +107,10 @@ CWGAudioProcessorEditor::~CWGAudioProcessorEditor()
 //==============================================================================
 void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 {
+	waveBox.setBounds(100, 100, 100, 100);
+	g.setColour(juce::Colours::aliceblue);
+	g.fillRect(waveBox);
+
 	g.fillAll(juce::Colours::black);
 	g.setColour(juce::Colours::white);
 	g.setFont(15.0f);
@@ -129,7 +133,7 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 		//scale y axis and draw path
 		eWaveform.startNewSubPath(0, getHeight() / 2);
 		for (int i = 0; i < eSampleVal.size(); ++i) {
-			auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0); //Map amplitude from (-1, 1) to (maxHeight, minHeight)
+			auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0); //Map amplitude from (-1, 1) to (minHeight, maxHeight)
 			eWaveform.lineTo(i, point);
 		}
 
@@ -155,7 +159,8 @@ void CWGAudioProcessorEditor::resized()
 
 	//Main controls
 	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
-	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
+	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.1f, 0.1f);
+	eStartSlider.setBoundsRelative(0, 0.5, 1, 0.1f);
 
 	//ADSR Slider Placements
 	const auto sliderX = 0.72f,
@@ -205,6 +210,8 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 		audioProcessor.controller.setMaster(eMasterSlider.getValue());
 	if (slider == &ePitchSlider)
 		audioProcessor.controller.setPitch(ePitchSlider.getValue());
+	if (slider == &eStartSlider)
+		audioProcessor.controller.setSampleStart(slider->getValue());
 
 	//ADSR
 	if (slider == &eAttackSlider || slider == &eDecaySlider

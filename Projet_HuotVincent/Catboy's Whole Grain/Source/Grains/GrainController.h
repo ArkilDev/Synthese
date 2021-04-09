@@ -18,6 +18,11 @@ public:
 	void setMaster(float x) { master = x; };
 	void setPitch(float x);
 
+	void setGrainLen(float x) { grainLength = x; };
+	void setSampleStart(float x) { startRatio = x; };
+	void setGrainAttack(float x) { grainARParam.attack = x; };
+	void setGrainRelease(float x) { grainARParam.release = x; };
+
 	//OwnedArray is an array made by JUCE specifically made to hold Objects
 	//Many parts of the code inspired directely from juce::Synthesiser class
 	juce::OwnedArray<CWGGrainProcessor> voices;
@@ -36,13 +41,14 @@ private:
 
 	juce::AudioBuffer<float> cFileBuffer;
 	juce::AudioBuffer<float> cProcessedBuffer;
-	int sampleStart = 0;
+	float startRatio = 0;
 	int samplePos = 0;
 	float grainLength = 1;
 
 	bool isLooping = false;
 
 	juce::ADSR::Parameters adsrParam;
+	juce::ADSR::Parameters grainARParam;
 
 	double getNotePitch(int note);
 };
