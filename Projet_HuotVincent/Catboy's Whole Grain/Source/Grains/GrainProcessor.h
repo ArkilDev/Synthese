@@ -4,7 +4,7 @@
 class CWGGrainProcessor {
 
 public:
-	CWGGrainProcessor(juce::AudioBuffer<float> file, int note, double pitch, juce::ADSR::Parameters param, double rate);
+	CWGGrainProcessor(juce::AudioBuffer<float> file, int note, double pitch, juce::ADSR::Parameters param, double rate, float len);
 
 	void process(juce::AudioBuffer<float>& buffer);
 
@@ -22,6 +22,7 @@ private:
 	double sampleRate;
 	int gNote;
 	double gNotePitch;
+	float length;
 
 	juce::AudioBuffer<float> gFileBuffer;
 };

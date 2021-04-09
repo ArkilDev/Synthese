@@ -50,11 +50,17 @@ private:
 	std::vector<float> eSampleVal;
 	bool eUpdateWaveDisplay = false;
 
-	juce::Slider eMasterSlider, ePitchSlider;
-	juce::Label eMasterLabel, ePitchLabel;
+	//Main controls
+	juce::Slider eStartSlider, eMasterSlider, ePitchSlider;
+	juce::Label eStartLabel, eMasterLabel, ePitchLabel;
 
+	//ADSR
 	juce::Slider eAttackSlider, eDecaySlider, eSustainSlider, eReleaseSlider;
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;
+
+	//Grain controls
+	juce::Slider eGrainLengthSlider, eGrainAttackSlider, eGrainReleaseSlider;
+	juce::Label eGrainLengthLabel, eGrainAttackLabel, eGrainReleaseLabel;
 
 	CWGAudioProcessor& audioProcessor;
 

@@ -19,7 +19,7 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 	while (mIt->getNextEvent(currentMessage, samplePos)) {
 		if (currentMessage.isNoteOn()) {
 			double notePitch = pitch + getNotePitch(currentMessage.getNoteNumber());
-			voices.add(new CWGGrainProcessor(cFileBuffer, currentMessage.getNoteNumber(), notePitch, adsrParam, sampleRate));
+			voices.add(new CWGGrainProcessor(cFileBuffer, currentMessage.getNoteNumber(), notePitch, adsrParam, sampleRate, grainLength));
 		}
 
 		if (currentMessage.isNoteOff()) {

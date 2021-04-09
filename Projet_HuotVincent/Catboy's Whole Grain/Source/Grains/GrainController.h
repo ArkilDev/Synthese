@@ -27,17 +27,18 @@ private:
 	float pitch = 0;
 	float master = 1;
 
-	CWGMidiProcessor cMidiProcessor;
 	juce::MidiBuffer midiMessages;
 	juce::MidiBuffer::Iterator* mIt;
 	juce::MidiMessage currentMessage;
 	double lastNoteHz = 440;
-	int samplePos = 0;
 
 	double sampleRate;
 
 	juce::AudioBuffer<float> cFileBuffer;
 	juce::AudioBuffer<float> cProcessedBuffer;
+	int sampleStart = 0;
+	int samplePos = 0;
+	float grainLength = 1;
 
 	bool isLooping = false;
 

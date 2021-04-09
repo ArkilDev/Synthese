@@ -1,6 +1,6 @@
 #include "GrainProcessor.h"
 
-CWGGrainProcessor::CWGGrainProcessor(juce::AudioBuffer<float> file, int note, double pitch, juce::ADSR::Parameters param, double rate) {
+CWGGrainProcessor::CWGGrainProcessor(juce::AudioBuffer<float> file, int note, double pitch, juce::ADSR::Parameters param, double rate, float len) {
 	gFileBuffer.makeCopyOf(file, true);
 	gNote = note;
 	gNotePitch = pitch;
@@ -8,6 +8,7 @@ CWGGrainProcessor::CWGGrainProcessor(juce::AudioBuffer<float> file, int note, do
 	adsr.setSampleRate(rate);
 	adsr.setParameters(param);
 	adsr.noteOn();
+	length = len;
 }
 
 void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {

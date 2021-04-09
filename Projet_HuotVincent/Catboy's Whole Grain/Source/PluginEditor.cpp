@@ -29,7 +29,14 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	btnLoop.onClick = [&]() {audioProcessor.switchLoop(); };
 	addAndMakeVisible(btnLoop);
 
-	//Master Knob
+	//Main controls
+	eStartSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+	eStartSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eStartSlider.setRange(.0f, 1.0f, 0.01f);
+	eStartSlider.setValue(0);
+	eStartSlider.addListener(this);
+	addAndMakeVisible(eStartSlider);
+
 	eMasterSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	eMasterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
 	eMasterSlider.setRange(.0f, 1.0f, 0.1f);
@@ -37,8 +44,6 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	eMasterSlider.addListener(this);
 	addAndMakeVisible(eMasterSlider);
 
-
-	//Pitch slider
 	ePitchSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	ePitchSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
 	ePitchSlider.setRange(.0f, 1.0f, 0.01f);
@@ -71,6 +76,25 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	eReleaseSlider.setRange(.0f, 5.0f, 0.01f);
 	eReleaseSlider.addListener(this);
 	addAndMakeVisible(eReleaseSlider);
+
+	//Grain controls
+	eGrainLengthSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+	eGrainLengthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eGrainLengthSlider.setRange(1.0f, 5.0f, 0.1f);
+	eGrainLengthSlider.addListener(this);
+	addAndMakeVisible(eGrainLengthSlider);
+
+	eGrainAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+	eGrainAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eGrainAttackSlider.setRange(.0f, 1.0f, 0.01f);
+	eGrainAttackSlider.addListener(this);
+	addAndMakeVisible(eGrainAttackSlider);
+
+	eGrainReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+	eGrainReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eGrainReleaseSlider.setRange(.0f, 1.0f, 0.01f);
+	eGrainReleaseSlider.addListener(this);
+	addAndMakeVisible(eGrainReleaseSlider);
 
 	setSize(1000, 600);
 }
@@ -129,6 +153,7 @@ void CWGAudioProcessorEditor::resized()
 {
 	eLogoImage.setBoundsRelative(0.01f, 0.8f, 0.1f, 0.2f);
 
+	//Main controls
 	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
 	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
 
@@ -143,6 +168,12 @@ void CWGAudioProcessorEditor::resized()
 	eSustainSlider.setBoundsRelative(sliderX + (sliderWidth * 2), sliderY, sliderWidth, sliderHeight);
 	eReleaseSlider.setBoundsRelative(sliderX + (sliderWidth * 3), sliderY, sliderWidth, sliderHeight);
 
+	//Grain controls
+	eGrainLengthSlider.setBoundsRelative(0.15f, 0.8, 0.05f, 0.2f);
+	eGrainAttackSlider.setBoundsRelative(0.2f, 0.8, 0.05f, 0.2f);
+	eGrainReleaseSlider.setBoundsRelative(0.25f, 0.8, 0.05f, 0.2f);
+
+	//Other
 	btnLoad.setBoundsRelative(0, 0, 0.1f, 0.1f);
 	btnLoop.setBoundsRelative(0.1f, 0.0f, 0.1f, 0.1f);
 }
@@ -168,9 +199,10 @@ void CWGAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x
 }
 
 void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
+
+	//Main controls
 	if (slider == &eMasterSlider)
 		audioProcessor.controller.setMaster(eMasterSlider.getValue());
-
 	if (slider == &ePitchSlider)
 		audioProcessor.controller.setPitch(ePitchSlider.getValue());
 
@@ -181,6 +213,14 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 			eDecaySlider.getValue(),
 			eSustainSlider.getValue(),
 			eReleaseSlider.getValue());
+
+	//Grain controls
+	if (slider == &eGrainLengthSlider)
+		audioProcessor.controller.setGrainLen(slider->getValue());
+	if (slider == &eGrainAttackSlider)
+		audioProcessor.controller.setGrainAttack(slider->getValue());
+	if (slider == &eGrainReleaseSlider)
+		audioProcessor.controller.setGrainRelease(slider->getValue());
 }
 
 void CWGAudioProcessorEditor::timerCallback() {
