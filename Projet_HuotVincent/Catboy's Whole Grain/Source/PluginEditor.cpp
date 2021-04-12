@@ -14,7 +14,7 @@
 CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	: AudioProcessorEditor(&p), audioProcessor(p)
 {
-	startTimerHz(30);
+	startTimerHz(24);
 
 	//Logo
 	auto logoImage = juce::ImageCache::getFromMemory(BinaryData::logo_png, BinaryData::logo_pngSize);
@@ -51,6 +51,13 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	ePitchSlider.addListener(this);
 	addAndMakeVisible(ePitchSlider);
 
+	ePanSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	ePanSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePanSlider.setRange(-1.0f, 1.0f, 0.01f);
+	ePanSlider.setValue(0);
+	ePanSlider.addListener(this);
+	addAndMakeVisible(ePanSlider);
+
 	//ADSR 
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
@@ -80,9 +87,16 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	//Grain controls
 	eGrainLengthSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainLengthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eGrainLengthSlider.setRange(1.0f, 5.0f, 0.1f);
+	eGrainLengthSlider.setRange(1.0f, 50.0f, 0.1f);
 	eGrainLengthSlider.addListener(this);
 	addAndMakeVisible(eGrainLengthSlider);
+
+	eGrainVolSlider;
+	eGrainVolSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+	eGrainVolSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eGrainVolSlider.setRange(.0f, 1.0f, 0.01f);
+	eGrainVolSlider.addListener(this);
+	addAndMakeVisible(eGrainVolSlider);
 
 	eGrainAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
@@ -158,8 +172,9 @@ void CWGAudioProcessorEditor::resized()
 	eLogoImage.setBoundsRelative(0.01f, 0.8f, 0.1f, 0.2f);
 
 	//Main controls
+	ePanSlider.setBoundsRelative(0.75f, 0.0f, 0.15f, 0.15f);
 	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
-	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.1f, 0.1f);
+	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
 	eStartSlider.setBoundsRelative(0, 0.5, 1, 0.1f);
 
 	//ADSR Slider Placements
@@ -175,8 +190,9 @@ void CWGAudioProcessorEditor::resized()
 
 	//Grain controls
 	eGrainLengthSlider.setBoundsRelative(0.15f, 0.8, 0.05f, 0.2f);
-	eGrainAttackSlider.setBoundsRelative(0.2f, 0.8, 0.05f, 0.2f);
-	eGrainReleaseSlider.setBoundsRelative(0.25f, 0.8, 0.05f, 0.2f);
+	eGrainVolSlider.setBoundsRelative(0.2f, 0.8, 0.05f, 0.2f);
+	eGrainAttackSlider.setBoundsRelative(0.25f, 0.8, 0.05f, 0.2f);
+	eGrainReleaseSlider.setBoundsRelative(0.3f, 0.8, 0.05f, 0.2f);
 
 	//Other
 	btnLoad.setBoundsRelative(0, 0, 0.1f, 0.1f);
@@ -207,11 +223,13 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 
 	//Main controls
 	if (slider == &eMasterSlider)
-		audioProcessor.controller.setMaster(eMasterSlider.getValue());
+		audioProcessor.controller.setMaster(slider->getValue());
 	if (slider == &ePitchSlider)
-		audioProcessor.controller.setPitch(ePitchSlider.getValue());
+		audioProcessor.controller.setPitch(slider->getValue());
 	if (slider == &eStartSlider)
 		audioProcessor.controller.setSampleStart(slider->getValue());
+	if (slider == &ePanSlider)
+		audioProcessor.controller.setMainPan(slider->getValue());
 
 	//ADSR
 	if (slider == &eAttackSlider || slider == &eDecaySlider

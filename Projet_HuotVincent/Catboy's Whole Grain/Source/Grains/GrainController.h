@@ -17,6 +17,7 @@ public:
 	void setADSR(float attack, float decay, float sustain, float release);
 	void setMaster(float x) { master = x; };
 	void setPitch(float x);
+	void setMainPan(float x) { pan = x; };
 
 	void setGrainLen(float x) { grainLength = x; };
 	void setSampleStart(float x) { startRatio = x; };
@@ -31,6 +32,7 @@ private:
 	//Controls
 	float pitch = 0;
 	float master = 1;
+	float pan = 0;
 
 	juce::MidiBuffer midiMessages;
 	juce::MidiBuffer::Iterator* mIt;

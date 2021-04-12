@@ -14,6 +14,8 @@ public:
 	int getNote() { return gNote; };
 	void setPitch(double x) { gNotePitch = x; };
 	void setStart(int x) { start = x; gBufferPos = x; };
+	void setVol(float x) { grainVol = x; };
+	void setPan(float x) { grainPan = x; };
 
 	juce::ADSR adsr;
 
@@ -25,6 +27,8 @@ private:
 	int gNote;
 	double gNotePitch;
 	float length;
+	float grainVol = 1;
+	float grainPan = 0;
 
 	juce::AudioBuffer<float> gFileBuffer;
 };

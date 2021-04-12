@@ -53,16 +53,16 @@ private:
 	bool eUpdateWaveDisplay = false;
 
 	//Main controls
-	juce::Slider eStartSlider, eMasterSlider, ePitchSlider;
-	juce::Label eStartLabel, eMasterLabel, ePitchLabel;
+	juce::Slider eStartSlider, eMasterSlider, ePitchSlider, ePanSlider;
+	juce::Label eStartLabel, eMasterLabel, ePitchLabel, ePanLabel;
 
 	//ADSR
 	juce::Slider eAttackSlider, eDecaySlider, eSustainSlider, eReleaseSlider;
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;
 
 	//Grain controls
-	juce::Slider eGrainLengthSlider, eGrainAttackSlider, eGrainReleaseSlider;
-	juce::Label eGrainLengthLabel, eGrainAttackLabel, eGrainReleaseLabel;
+	juce::Slider eGrainLengthSlider, eGrainVolSlider, eGrainAttackSlider, eGrainReleaseSlider;
+	juce::Label eGrainLengthLabel, eGrainVolLabel, eGrainAttackLabel, eGrainReleaseLabel;
 
 	CWGAudioProcessor& audioProcessor;
 

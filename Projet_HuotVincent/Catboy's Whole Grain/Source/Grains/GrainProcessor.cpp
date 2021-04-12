@@ -15,7 +15,11 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
 	float* filePointer = 0;
 	float currentVal = 0;
 	for (int i = 0; i < buffer.getNumSamples(); ++i) {
-		if (gBufferPos <= gFileBuffer.getNumSamples() && gBufferPos - start < length * sampleRate /1000) {
+
+		//If position not at the end of the sample nor the grain length
+		if (gBufferPos <= gFileBuffer.getNumSamples() && gBufferPos - start < length * sampleRate / 1000) {
+
+			//Linear interpolation
 			for (auto channel = 0; channel < buffer.getNumChannels(); ++channel) {
 				filePointer = gFileBuffer.getWritePointer(channel);
 
@@ -26,7 +30,8 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
 					currentVal = filePointer[(int)gBufferPos];
 				}
 
-				buffer.setSample(channel, i, buffer.getSample(channel, i) + (currentVal * adsr.getNextSample()));
+				//Set value in output buffer
+				buffer.setSample(channel, i, buffer.getSample(channel, i) + (currentVal * adsr.getNextSample() * grainVol));
 			}
 			gBufferPos += gNotePitch;
 
@@ -34,5 +39,13 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
 		else {
 			gBufferPos = start;
 		}
+	}
+
+	//Pan handling
+	if (grainPan > 0) {
+		buffer.applyGain(0, 0, buffer.getNumSamples(), 1 - grainPan);
+	}
+	else {
+		buffer.applyGain(1, 0, buffer.getNumSamples(), 1 - (grainPan * -1));
 	}
 }
