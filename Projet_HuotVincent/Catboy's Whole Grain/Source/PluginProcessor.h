@@ -57,7 +57,6 @@ public:
 	//==============================================================================
 	void loadFile();
 	void loadFile(const juce::String& path);
-	void switchLoop();
 	juce::AudioBuffer<float> getFileBuffer() { return pFileBuffer; };
 	bool isFileLoaded() { return hasFile; };
 

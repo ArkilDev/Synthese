@@ -10,7 +10,6 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
-#include "MidiProcessor.h"
 
 //==============================================================================
 /**
@@ -47,7 +46,6 @@ private:
 	juce::Path eWaveform;
 
 	juce::TextButton btnLoad{ "browse" };
-	juce::ToggleButton btnLoop{ "Loop" };
 
 	std::vector<float> eSampleVal;
 	bool eUpdateWaveDisplay = false;
@@ -61,8 +59,8 @@ private:
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;
 
 	//Grain controls
-	juce::Slider eGrainLengthSlider, eGrainVolSlider, eGrainAttackSlider, eGrainReleaseSlider;
-	juce::Label eGrainLengthLabel, eGrainVolLabel, eGrainAttackLabel, eGrainReleaseLabel;
+	juce::Slider eGrainLengthSlider, eGrainDensitySlider, eGrainAttackSlider, eGrainReleaseSlider;
+	juce::Label eGrainLengthLabel, eGrainDensityLabel, eGrainAttackLabel, eGrainReleaseLabel;
 
 	CWGAudioProcessor& audioProcessor;
 

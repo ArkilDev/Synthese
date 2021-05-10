@@ -1,51 +1,52 @@
 #include "GrainProcessor.h"
 
-CWGGrainProcessor::CWGGrainProcessor(juce::AudioBuffer<float> file, int note, double pitch, juce::ADSR::Parameters param, double rate, float len) {
-	gFileBuffer.makeCopyOf(file, true);
-	gNote = note;
-	gNotePitch = pitch;
-	sampleRate = rate;
-	adsr.setSampleRate(rate);
-	adsr.setParameters(param);
-	adsr.noteOn();
-	length = len;
+CWGGrainProcessor::CWGGrainProcessor(GeneratorInfo x) {
+	grainInfo = x;
+	grainInfo.adsr.setSampleRate(grainInfo.sampleRate);
+	grainInfo.grainAdsrParam.sustain = 0;
+	grainInfo.grainAdsrParam.release = 0;
+	grainInfo.adsr.setParameters(grainInfo.grainAdsrParam);
+	grainInfo.adsr.noteOn();
+	samplePos = grainInfo.start;
+	maxSampleCount = grainInfo.grainLength * grainInfo.sampleRate / 1000;
 }
 
 void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
-	float* filePointer = 0;
+	const float* filePointer = 0;
 	float currentVal = 0;
+	float sampleLeft = 0;
 	for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
 		//If position not at the end of the sample nor the grain length
-		if (gBufferPos <= gFileBuffer.getNumSamples() && gBufferPos - start < length * sampleRate / 1000) {
+		if (samplePos <= grainInfo.file->getNumSamples() && samplePos - grainInfo.start < maxSampleCount) {
 
 			//Linear interpolation
 			for (auto channel = 0; channel < buffer.getNumChannels(); ++channel) {
-				filePointer = gFileBuffer.getWritePointer(channel);
+				filePointer = grainInfo.file->getReadPointer(channel);
 
-				if (gBufferPos != std::trunc(gBufferPos)) {
-					currentVal = (filePointer[(int)std::floor(gBufferPos)] + filePointer[(int)std::ceil(gBufferPos)]) / 2;
+				if (samplePos != std::trunc(samplePos)) {
+					currentVal = (filePointer[(int)std::floor(samplePos)] + filePointer[(int)std::ceil(samplePos)]) / 2;
 				}
 				else {
-					currentVal = filePointer[(int)gBufferPos];
+					currentVal = filePointer[(int)samplePos];
 				}
 
 				//Set value in output buffer
-				buffer.setSample(channel, i, buffer.getSample(channel, i) + (currentVal * adsr.getNextSample() * grainVol));
+				buffer.setSample(channel, i, buffer.getSample(channel, i) + (currentVal * grainInfo.adsr.getNextSample() * grainInfo.volume));
 			}
-			gBufferPos += gNotePitch;
+			samplePos += grainInfo.pitch;
 
 		}
 		else {
-			gBufferPos = start;
+			samplePos = grainInfo.start;
 		}
 	}
 
 	//Pan handling
-	if (grainPan > 0) {
-		buffer.applyGain(0, 0, buffer.getNumSamples(), 1 - grainPan);
+	if (grainInfo.pan > 0) {
+		buffer.applyGain(0, 0, buffer.getNumSamples(), 1 - grainInfo.pan);
 	}
 	else {
-		buffer.applyGain(1, 0, buffer.getNumSamples(), 1 - (grainPan * -1));
+		buffer.applyGain(1, 0, buffer.getNumSamples(), 1 - (grainInfo.pan * -1));
 	}
 }

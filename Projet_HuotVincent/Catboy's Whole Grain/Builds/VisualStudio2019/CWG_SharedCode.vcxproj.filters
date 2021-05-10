@@ -439,14 +439,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Source\Grains\GrainController.cpp">
-      <Filter>CWG\Source\Grains</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Source\Grains\GrainProcessor.cpp">
       <Filter>CWG\Source\Grains</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Source\MidiProcessor.cpp">
-      <Filter>CWG\Source</Filter>
+    <ClCompile Include="..\..\Source\Grains\GrainController.cpp">
+      <Filter>CWG\Source\Grains</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Source\Grains\Voice.cpp">
+      <Filter>CWG\Source\Grains</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Source\PluginProcessor.cpp">
       <Filter>CWG\Source</Filter>
@@ -2505,14 +2505,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Source\Grains\GrainController.h">
+    <ClInclude Include="..\..\Source\Grains\infoStruct.h">
       <Filter>CWG\Source\Grains</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Grains\GrainProcessor.h">
       <Filter>CWG\Source\Grains</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\MidiProcessor.h">
-      <Filter>CWG\Source</Filter>
+    <ClInclude Include="..\..\Source\Grains\GrainController.h">
+      <Filter>CWG\Source\Grains</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Grains\Voice.h">
+      <Filter>CWG\Source\Grains</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\PluginProcessor.h">
       <Filter>CWG\Source</Filter>

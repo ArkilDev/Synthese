@@ -8,7 +8,6 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "MidiProcessor.h"
 #include <iostream>
 
 //==============================================================================
@@ -141,13 +140,9 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	auto totalNumOutputChannels = getTotalNumOutputChannels();
 
 	if (hasFile) {
-		//use a temporary buffer to avoid processing the buffer twice and keeping 
 		auto tempBuffer = controller.getProcessedBuffer(&buffer, midiMessages);
-
-		for (int i = 0; i < totalNumOutputChannels; ++i) {
-			buffer.clear(i, 0, buffer.getNumSamples());
+		for (int i = 0; i < totalNumOutputChannels; ++i)
 			buffer.copyFrom(i, 0, tempBuffer.getReadPointer(i), buffer.getNumSamples(), 1);
-		}
 	}
 }
 
@@ -194,7 +189,7 @@ void CWGAudioProcessor::loadFile(const juce::String& filePath) {
 
 	//Add file to buffer
 	pFormatReader->read(&pFileBuffer, 0, pFileBuffer.getNumSamples(), 0, true, true);
-	controller.instantiate(pFileBuffer);
+	controller.instantiate(&pFileBuffer);
 	hasFile = true;
 }
 
@@ -205,8 +200,4 @@ void CWGAudioProcessor::loadFile() {
 		auto file = chooser.getResult();
 		CWGAudioProcessor::loadFile(file.getFullPathName());
 	}
-}
-
-void CWGAudioProcessor::switchLoop() {
-	controller.switchLoop();
 }

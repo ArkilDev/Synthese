@@ -8,13 +8,12 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
-#include "MidiProcessor.h"
 
 //==============================================================================
 CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	: AudioProcessorEditor(&p), audioProcessor(p)
 {
-	startTimerHz(24);
+	startTimerHz(60);
 
 	//Logo
 	auto logoImage = juce::ImageCache::getFromMemory(BinaryData::logo_png, BinaryData::logo_pngSize);
@@ -25,9 +24,6 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	btnLoad.onClick = [&]() {audioProcessor.loadFile(); };
 	addAndMakeVisible(btnLoad);
-
-	btnLoop.onClick = [&]() {audioProcessor.switchLoop(); };
-	addAndMakeVisible(btnLoop);
 
 	//Main controls
 	eStartSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
@@ -61,13 +57,13 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	//ADSR 
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eAttackSlider.setRange(.0f, 5.0f, 0.01f);
+	eAttackSlider.setRange(.0f, 1.0f, 0.01f);
 	eAttackSlider.addListener(this);
 	addAndMakeVisible(eAttackSlider);
 
 	eDecaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eDecaySlider.setRange(.0f, 5.0f, 0.01f);
+	eDecaySlider.setRange(.0f, 1.0f, 0.01f);
 	eDecaySlider.addListener(this);
 	addAndMakeVisible(eDecaySlider);
 
@@ -80,23 +76,23 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	eReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eReleaseSlider.setRange(.0f, 5.0f, 0.01f);
+	eReleaseSlider.setRange(.0f, 1.0f, 0.01f);
 	eReleaseSlider.addListener(this);
 	addAndMakeVisible(eReleaseSlider);
 
 	//Grain controls
 	eGrainLengthSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainLengthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eGrainLengthSlider.setRange(1.0f, 50.0f, 0.1f);
+	eGrainLengthSlider.setRange(1.0f, 500.0f, 0.1f);
 	eGrainLengthSlider.addListener(this);
 	addAndMakeVisible(eGrainLengthSlider);
 
-	eGrainVolSlider;
-	eGrainVolSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eGrainVolSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eGrainVolSlider.setRange(.0f, 1.0f, 0.01f);
-	eGrainVolSlider.addListener(this);
-	addAndMakeVisible(eGrainVolSlider);
+	eGrainDensitySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
+	eGrainDensitySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eGrainDensitySlider.setRange(1, 500, 1);
+	eGrainDensitySlider.setValue(1);
+	eGrainDensitySlider.addListener(this);
+	addAndMakeVisible(eGrainDensitySlider);
 
 	eGrainAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
@@ -156,15 +152,19 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 	}
 	g.strokePath(eWaveform, juce::PathStrokeType(2));
 
+	/*
 	if (audioProcessor.isFileLoaded()) {
-		if (audioProcessor.controller.voices.size() != 0) {
-			for (auto* voice : audioProcessor.controller.voices) {
-				auto playHeadPosition = juce::jmap<int>(std::floor(voice->getBufferPos()), 0, audioProcessor.getFileBuffer().getNumSamples(), 0, getWidth());
+		for (int i = 0; i < audioProcessor.controller.voices.size(); ++i) {
+			auto* pntr = audioProcessor.controller.voices[i];
+			if (pntr != nullptr) {
+				auto playHeadPosition = juce::jmap<int>(std::floor(pntr->getBufferPos()), 0, audioProcessor.getFileBuffer().getNumSamples(), 0, getWidth());
+				float Ypos = getHeight() / 2 + pntr->getPan() * 100;
 				g.setColour(juce::Colours::blue);
-				g.drawLine(playHeadPosition, 0, playHeadPosition, getHeight(), 2.0f);
+				g.fillRect((float)playHeadPosition, (float)Ypos, 20.0f, 10.0f);
 			}
 		}
 	}
+	*/
 }
 
 void CWGAudioProcessorEditor::resized()
@@ -172,7 +172,7 @@ void CWGAudioProcessorEditor::resized()
 	eLogoImage.setBoundsRelative(0.01f, 0.8f, 0.1f, 0.2f);
 
 	//Main controls
-	ePanSlider.setBoundsRelative(0.75f, 0.0f, 0.15f, 0.15f);
+	ePanSlider.setBoundsRelative(0.75f, 0.0f, 0.1f, 0.15f);
 	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
 	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
 	eStartSlider.setBoundsRelative(0, 0.5, 1, 0.1f);
@@ -190,13 +190,12 @@ void CWGAudioProcessorEditor::resized()
 
 	//Grain controls
 	eGrainLengthSlider.setBoundsRelative(0.15f, 0.8, 0.05f, 0.2f);
-	eGrainVolSlider.setBoundsRelative(0.2f, 0.8, 0.05f, 0.2f);
+	eGrainDensitySlider.setBoundsRelative(0.10f, 0.8, 0.05f, 0.2f);
 	eGrainAttackSlider.setBoundsRelative(0.25f, 0.8, 0.05f, 0.2f);
 	eGrainReleaseSlider.setBoundsRelative(0.3f, 0.8, 0.05f, 0.2f);
 
 	//Other
 	btnLoad.setBoundsRelative(0, 0, 0.1f, 0.1f);
-	btnLoop.setBoundsRelative(0.1f, 0.0f, 0.1f, 0.1f);
 }
 
 //File management ==============================================
@@ -242,6 +241,8 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 	//Grain controls
 	if (slider == &eGrainLengthSlider)
 		audioProcessor.controller.setGrainLen(slider->getValue());
+	if (slider == &eGrainDensitySlider)
+		audioProcessor.controller.setGrainDensity(slider->getValue());
 	if (slider == &eGrainAttackSlider)
 		audioProcessor.controller.setGrainAttack(slider->getValue());
 	if (slider == &eGrainReleaseSlider)

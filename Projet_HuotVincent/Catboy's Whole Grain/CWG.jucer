@@ -3,22 +3,23 @@
 <JUCERPROJECT id="GSy9ZS" name="CWG" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               pluginVST3Category="Instrument" pluginCharacteristicsValue="pluginIsSynth"
-              pluginFormats="buildStandalone,buildVST,buildVST3" pluginName="Catboi's whole grain">
+              pluginFormats="buildStandalone,buildVST,buildVST3" pluginName="Catboi's whole grain"
+              companyName="Arkil">
   <MAINGROUP id="Dxne80" name="CWG">
     <GROUP id="{C2D83437-C103-346E-F43D-59050A2FFDE6}" name="Source">
       <GROUP id="{59E86593-EA82-C027-5FE7-941A00450C07}" name="Grains">
+        <FILE id="SdiFps" name="infoStruct.h" compile="0" resource="0" file="Source/Grains/infoStruct.h"/>
+        <FILE id="hSAtCS" name="GrainProcessor.h" compile="0" resource="0"
+              file="Source/Grains/GrainProcessor.h"/>
+        <FILE id="bGZcBu" name="GrainProcessor.cpp" compile="1" resource="0"
+              file="Source/Grains/GrainProcessor.cpp"/>
         <FILE id="jKNGNX" name="GrainController.cpp" compile="1" resource="0"
               file="Source/Grains/GrainController.cpp"/>
         <FILE id="X77R7z" name="GrainController.h" compile="0" resource="0"
               file="Source/Grains/GrainController.h"/>
-        <FILE id="PvP7Jn" name="GrainProcessor.cpp" compile="1" resource="0"
-              file="Source/Grains/GrainProcessor.cpp"/>
-        <FILE id="PLz6ux" name="GrainProcessor.h" compile="0" resource="0"
-              file="Source/Grains/GrainProcessor.h"/>
+        <FILE id="XpOsJf" name="Voice.cpp" compile="1" resource="0" file="Source/Grains/Voice.cpp"/>
+        <FILE id="aTdwxq" name="Voice.h" compile="0" resource="0" file="Source/Grains/Voice.h"/>
       </GROUP>
-      <FILE id="bEksGT" name="MidiProcessor.cpp" compile="1" resource="0"
-            file="Source/MidiProcessor.cpp"/>
-      <FILE id="XYe0FX" name="MidiProcessor.h" compile="0" resource="0" file="Source/MidiProcessor.h"/>
       <FILE id="QQGuOz" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="khHE1l" name="PluginProcessor.h" compile="0" resource="0"
