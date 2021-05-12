@@ -23,12 +23,12 @@ CWGAudioProcessor::CWGAudioProcessor()
 	)
 #endif
 {
-	pFormatManager.registerBasicFormats();
+
 }
 
 CWGAudioProcessor::~CWGAudioProcessor()
 {
-	pFormatReader = nullptr;
+
 }
 
 //==============================================================================
@@ -139,7 +139,7 @@ void CWGAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce::Mid
 	auto totalNumInputChannels = getTotalNumInputChannels();
 	auto totalNumOutputChannels = getTotalNumOutputChannels();
 
-	if (hasFile) {
+	if (controller.isFileLoaded()) {
 		auto tempBuffer = controller.getProcessedBuffer(&buffer, midiMessages);
 		for (int i = 0; i < totalNumOutputChannels; ++i)
 			buffer.copyFrom(i, 0, tempBuffer.getReadPointer(i), buffer.getNumSamples(), 1);
@@ -180,24 +180,11 @@ juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 
 //User-made function ===========================================================
 
-//File systems
-void CWGAudioProcessor::loadFile(const juce::String& filePath) {
-	pFormatReader = pFormatManager.createReaderFor(filePath);
-
-	//make buffer big enough and clear buffer related variables
-	pFileBuffer.setSize((int)pFormatReader->numChannels, (int)pFormatReader->lengthInSamples);
-
-	//Add file to buffer
-	pFormatReader->read(&pFileBuffer, 0, pFileBuffer.getNumSamples(), 0, true, true);
-	controller.instantiate(&pFileBuffer);
-	hasFile = true;
-}
-
 //get file with button
 void CWGAudioProcessor::loadFile() {
 	juce::FileChooser chooser{ "Please select a file to load" };
 	if (chooser.browseForFileToOpen()) {
 		auto file = chooser.getResult();
-		CWGAudioProcessor::loadFile(file.getFullPathName());
+		controller.loadFile(file.getFullPathName());
 	}
 }

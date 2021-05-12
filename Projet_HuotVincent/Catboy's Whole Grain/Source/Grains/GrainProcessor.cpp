@@ -1,27 +1,36 @@
 #include "GrainProcessor.h"
 
-CWGGrainProcessor::CWGGrainProcessor(GeneratorInfo x) {
+CWGGrainProcessor::CWGGrainProcessor(GeneratorInfo x) : maxSampleCount(x.grainLength* x.sampleRate / 1000) {
 	grainInfo = x;
+	samplePos = grainInfo.start;
+	sampleLeft = maxSampleCount;
+
+	nbSampleSkip = grainInfo.pitch + (std::pow(2.0, grainInfo.note / 12.0) / 32);
+
+	grainInfo.pan = (float)(rand() % 200 - 100) / 100.0f;
+
 	grainInfo.adsr.setSampleRate(grainInfo.sampleRate);
 	grainInfo.grainAdsrParam.sustain = 0;
 	grainInfo.grainAdsrParam.release = 0;
+	grainInfo.grainAdsrParam.attack *= (maxSampleCount / grainInfo.sampleRate);
+	grainInfo.grainAdsrParam.decay *= (maxSampleCount / grainInfo.sampleRate);
 	grainInfo.adsr.setParameters(grainInfo.grainAdsrParam);
 	grainInfo.adsr.noteOn();
-	samplePos = grainInfo.start;
-	maxSampleCount = grainInfo.grainLength * grainInfo.sampleRate / 1000;
 }
 
-void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
+void CWGGrainProcessor::process(juce::AudioBuffer<float>* const& buffer) {
 	const float* filePointer = 0;
 	float currentVal = 0;
-	float sampleLeft = 0;
-	for (int i = 0; i < buffer.getNumSamples(); ++i) {
 
+	auto temp = buffer->getNumSamples();
+	for (int i = 0; i < buffer->getNumSamples(); ++i) {
+
+		float adsrSample = 1 - grainInfo.adsr.getNextSample();
 		//If position not at the end of the sample nor the grain length
-		if (samplePos <= grainInfo.file->getNumSamples() && samplePos - grainInfo.start < maxSampleCount) {
+		if (samplePos <= grainInfo.file->getNumSamples() && sampleLeft > 0) {
 
 			//Linear interpolation
-			for (auto channel = 0; channel < buffer.getNumChannels(); ++channel) {
+			for (auto channel = 0; channel < buffer->getNumChannels(); ++channel) {
 				filePointer = grainInfo.file->getReadPointer(channel);
 
 				if (samplePos != std::trunc(samplePos)) {
@@ -31,22 +40,30 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>& buffer) {
 					currentVal = filePointer[(int)samplePos];
 				}
 
-				//Set value in output buffer
-				buffer.setSample(channel, i, buffer.getSample(channel, i) + (currentVal * grainInfo.adsr.getNextSample() * grainInfo.volume));
-			}
-			samplePos += grainInfo.pitch;
+				//Pan handling
+				switch (channel) {
+				default: grainInfo.pan > 0 ? currentVal *= 1 - grainInfo.pan : currentVal; break;
+				case 1: grainInfo.pan < 0 ? currentVal *= 1 - std::abs(grainInfo.pan) : currentVal; break;
+				}
 
+				//Declick
+				if (sampleLeft < 25) {
+					currentVal /= 25 - sampleLeft;
+				}
+				else if (maxSampleCount - sampleLeft < 25) {
+					currentVal /= 25 - (maxSampleCount - sampleLeft);
+				}
+
+				//Set value in output buffer
+				temp = buffer->getSample(channel, i);
+				buffer->setSample(channel, i, buffer->getSample(channel, i) + (currentVal * grainInfo.volume));
+			}
+			samplePos += nbSampleSkip;
+			--sampleLeft;
 		}
 		else {
-			samplePos = grainInfo.start;
+			grainInfo.adsr.noteOff();
 		}
 	}
-
-	//Pan handling
-	if (grainInfo.pan > 0) {
-		buffer.applyGain(0, 0, buffer.getNumSamples(), 1 - grainInfo.pan);
-	}
-	else {
-		buffer.applyGain(1, 0, buffer.getNumSamples(), 1 - (grainInfo.pan * -1));
-	}
+	grainInfo.adsr.applyEnvelopeToBuffer(*buffer, 0, buffer->getNumSamples());
 }

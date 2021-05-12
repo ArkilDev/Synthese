@@ -2,26 +2,32 @@
 
 CWGVoice::CWGVoice(GeneratorInfo x) {
 	voiceInfo = x;
-	Timer::startTimer(voiceInfo.grainDensity);
 	grains.reserve(100);
 	createGrain();
+	voiceInfo.adsr.setParameters(voiceInfo.adsrParam);
 	voiceInfo.adsr.noteOn();
+	clock = 1;
 }
 
 CWGVoice::~CWGVoice() {
-	Timer::stopTimer();
+	//Deconstructor
 }
 
-void CWGVoice::timerCallback() {
-	if (grains.size() < grains.capacity())
+void CWGVoice::fakeTimerCallback() {
+	if (grains.size() < grains.capacity() && clock % voiceInfo.grainDensity == 0) {
 		createGrain();
+		clock = 1;
+	}
+	clock++;
 }
 
-void CWGVoice::processGrains(juce::AudioBuffer<float>& buffer) {
+void CWGVoice::processGrains(juce::AudioBuffer<float>* const& buffer) {
 	for (int i = 0; i < grains.size(); ++i)
 	{
 		auto* grain = grains.at(i);
+		auto temp = buffer->getSample(0, 255);
 		grain->process(buffer);
+		voiceInfo.adsr.applyEnvelopeToBuffer(*buffer, 0, buffer->getNumSamples());
 
 		//Handling special cases
 		if (grain->getBufferPos() >= voiceInfo.file->getNumSamples()) {
@@ -39,15 +45,14 @@ void CWGVoice::processGrains(juce::AudioBuffer<float>& buffer) {
 }
 
 void CWGVoice::createGrain() {
-	double sampleSkipAmount = voiceInfo.pitch + (std::pow(2.0, voiceInfo.note / 12.0) / 32);
 	if (grains.size() < grains.capacity())
 		grains.push_back(new CWGGrainProcessor(voiceInfo));
 }
 
 void CWGVoice::setAdsrOff() {
 	voiceInfo.adsr.noteOff();
-	for each (auto * grain in grains)
+	for (int i = 0; i < grains.size(); ++i)
 	{
-		grain->grainInfo.adsr.noteOff();
+		grains.at(i)->grainInfo.adsr.noteOff();
 	}
 }

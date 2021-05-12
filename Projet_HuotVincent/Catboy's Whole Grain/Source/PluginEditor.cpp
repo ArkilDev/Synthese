@@ -57,13 +57,13 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	//ADSR 
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eAttackSlider.setRange(.0f, 1.0f, 0.01f);
+	eAttackSlider.setRange(.0f, 5.0f, 0.01f);
 	eAttackSlider.addListener(this);
 	addAndMakeVisible(eAttackSlider);
 
 	eDecaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eDecaySlider.setRange(.0f, 1.0f, 0.01f);
+	eDecaySlider.setRange(.0f, 5.0f, 0.01f);
 	eDecaySlider.addListener(this);
 	addAndMakeVisible(eDecaySlider);
 
@@ -76,7 +76,7 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	eReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eReleaseSlider.setRange(.0f, 1.0f, 0.01f);
+	eReleaseSlider.setRange(.0f, 5.0f, 0.01f);
 	eReleaseSlider.addListener(this);
 	addAndMakeVisible(eReleaseSlider);
 
@@ -125,46 +125,47 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 	g.setColour(juce::Colours::white);
 	g.setFont(15.0f);
 
-	//get waveform
-	auto wave = audioProcessor.getFileBuffer();
-	float ratio = wave.getNumSamples() / getWidth();
+	if (audioProcessor.controller.isFileLoaded()) {
+		//get waveform
+		auto wave = audioProcessor.controller.getFileBuffer();
+		float ratio = wave.getNumSamples() / getWidth();
 
 
-	if (eUpdateWaveDisplay) {
-		auto buffer = wave.getReadPointer(0);
-		eSampleVal.clear();
+		if (eUpdateWaveDisplay) {
+			auto buffer = wave.getReadPointer(0);
+			eSampleVal.clear();
 
 
-		//scale x axis
-		for (int i = 0; i < wave.getNumSamples(); i += ratio) {
-			eSampleVal.push_back(buffer[i]); //get point in sample at ratio interval to make the length fit the window
+			//scale x axis
+			for (int i = 0; i < wave.getNumSamples(); i += ratio) {
+				eSampleVal.push_back(buffer[i]); //get point in sample at ratio interval to make the length fit the window
+			}
+
+			//scale y axis and draw path
+			eWaveform.startNewSubPath(0, getHeight() / 2);
+			for (int i = 0; i < eSampleVal.size(); ++i) {
+				auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0); //Map amplitude from (-1, 1) to (minHeight, maxHeight)
+				eWaveform.lineTo(i, point);
+			}
+
+
+			eUpdateWaveDisplay = false;
 		}
+		g.strokePath(eWaveform, juce::PathStrokeType(2));
 
-		//scale y axis and draw path
-		eWaveform.startNewSubPath(0, getHeight() / 2);
-		for (int i = 0; i < eSampleVal.size(); ++i) {
-			auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0); //Map amplitude from (-1, 1) to (minHeight, maxHeight)
-			eWaveform.lineTo(i, point);
-		}
-
-
-		eUpdateWaveDisplay = false;
-	}
-	g.strokePath(eWaveform, juce::PathStrokeType(2));
-
-	/*
-	if (audioProcessor.isFileLoaded()) {
-		for (int i = 0; i < audioProcessor.controller.voices.size(); ++i) {
-			auto* pntr = audioProcessor.controller.voices[i];
-			if (pntr != nullptr) {
-				auto playHeadPosition = juce::jmap<int>(std::floor(pntr->getBufferPos()), 0, audioProcessor.getFileBuffer().getNumSamples(), 0, getWidth());
-				float Ypos = getHeight() / 2 + pntr->getPan() * 100;
-				g.setColour(juce::Colours::blue);
-				g.fillRect((float)playHeadPosition, (float)Ypos, 20.0f, 10.0f);
+		if (audioProcessor.controller.isFileLoaded()) {
+			for (int i = 0; i < audioProcessor.controller.voices.size(); ++i) {
+				CWGVoice* voice = audioProcessor.controller.voices.at(i);
+				for (int j = 0; j < voice->grains.size(); ++j) {
+					CWGGrainProcessor* grain = voice->grains.at(j);
+					auto playHeadPosition = juce::jmap<int>(std::floor(grain->getBufferPos()), 0, audioProcessor.getFileBuffer().getNumSamples(), 0, getWidth());
+					float Ypos = getHeight() / 2 + grain->grainInfo.pan * 100;
+					g.setColour(juce::Colours::blue);
+					g.fillRect((float)playHeadPosition, (float)Ypos, 20.0f, 10.0f);
+				}
 			}
 		}
 	}
-	*/
 }
 
 void CWGAudioProcessorEditor::resized()
@@ -212,7 +213,7 @@ void CWGAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x
 	for (auto file : files) {
 		if (isInterestedInFileDrag(file)) {
 			eUpdateWaveDisplay = true;
-			audioProcessor.loadFile(file);
+			audioProcessor.controller.loadFile(file);
 		}
 	}
 	repaint();

@@ -56,20 +56,13 @@ public:
 
 	//==============================================================================
 	void loadFile();
-	void loadFile(const juce::String& path);
-	juce::AudioBuffer<float> getFileBuffer() { return pFileBuffer; };
-	bool isFileLoaded() { return hasFile; };
+	juce::AudioBuffer<float> getFileBuffer() { return controller.getFileBuffer(); };
 
 	//Passed from PluginEditor to GrainController
 	CWGGrainController controller;
 
 private:
 	juce::Synthesiser pSynth;
-
-	juce::AudioFormatManager pFormatManager;
-	juce::AudioFormatReader* pFormatReader;
-	juce::AudioBuffer<float> pFileBuffer;
-	bool hasFile = false;
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CWGAudioProcessor)

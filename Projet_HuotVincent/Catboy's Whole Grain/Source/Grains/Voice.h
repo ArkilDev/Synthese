@@ -3,24 +3,23 @@
 #include "../Grains/GrainProcessor.h"
 #include "../Grains/infoStruct.h"
 
-class CWGVoice : juce::Timer {
+class CWGVoice {
 public:
 	CWGVoice(GeneratorInfo x);
 	~CWGVoice();
-	void timerCallback() override;
-	void processGrains(juce::AudioBuffer<float>& buffer);
+	void processGrains(juce::AudioBuffer<float>* const& buffer);
+	void fakeTimerCallback();
 
 	void setPitch(float x) { voiceInfo.pitch = x; };
 	void setAdsrOff();
 
-	int getNote() { return voiceInfo.note; };
-	bool isAdsrActive() { return voiceInfo.adsr.isActive(); };
-
-private:
+	std::vector<CWGGrainProcessor*> grains;
 	GeneratorInfo voiceInfo;
 
-	std::vector<CWGGrainProcessor*> grains;
+private:
+	int clock;
 	juce::ADSR::Parameters grainARParam;
+	std::vector<CWGGrainProcessor*>::const_iterator grainIterator;
 	float grainLength = 1;
 	float grainStartSample;
 

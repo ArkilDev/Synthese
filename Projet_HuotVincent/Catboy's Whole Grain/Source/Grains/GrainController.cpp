@@ -2,21 +2,44 @@
 #include <iostream>
 
 CWGGrainController::CWGGrainController() {
+	//callback at every milisecond and let individual voices desides to run or not
+	HighResolutionTimer::startTimer(1);
 	voices.clear();
 	voices.reserve(16);
+	formatManager.registerBasicFormats();
 }
 
 CWGGrainController::~CWGGrainController() {
-	//Deconstructor
+	formatReader = nullptr;
 }
 
 void CWGGrainController::instantiate(juce::AudioBuffer<float>* buffer) {
 	controllerInfo.file = buffer;
 }
 
-juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer& midi) {
-	cProcessedBuffer.clear();
-	cProcessedBuffer.setSize(buffer->getNumChannels(), buffer->getNumSamples());
+void CWGGrainController::hiResTimerCallback() {
+	for (auto* voice : voices) {
+		voice->fakeTimerCallback();
+	}
+
+}
+
+//File systems
+void CWGGrainController::loadFile(const juce::String& filePath) {
+	formatReader = formatManager.createReaderFor(filePath);
+
+	//make buffer big enough and clear buffer related variables
+	fileBuffer.setSize((int)formatReader->numChannels, (int)formatReader->lengthInSamples);
+
+	//Add file to buffer
+	formatReader->read(&fileBuffer, 0, fileBuffer.getNumSamples(), 0, true, true);
+	controllerInfo.file = &fileBuffer;
+	hasFile = true;
+}
+
+juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer midi) {
+	processedBuffer.clear();
+	processedBuffer.setSize(buffer->getNumChannels(), buffer->getNumSamples());
 
 	//Midi Handling
 	mIt = new juce::MidiBuffer::Iterator(midi);
@@ -30,7 +53,8 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 
 		if (currentMessage.isNoteOff()) {
 			for (int i = 0; i < voices.size(); ++i)
-				if (voices.at(i)->getNote() == currentMessage.getNoteNumber()) voices.at(i)->setAdsrOff();
+				if (voices.at(i)->voiceInfo.note == currentMessage.getNoteNumber())
+					voices.at(i)->setAdsrOff();
 		}
 	}
 
@@ -39,16 +63,16 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 	{
 		auto* voice = voices.at(i);
 		//Process
-		voice->processGrains(cProcessedBuffer);
+		auto temp = processedBuffer.getSample(0, 255);
+		voice->processGrains(&processedBuffer);
 
-		if (!voice->isAdsrActive()) {
+		if (!voice->voiceInfo.adsr.isActive())
 			voices.erase(voices.begin() + i);
-		}
 	}
 
-	cProcessedBuffer.applyGain(master);
-	controllerInfo.adsr.applyEnvelopeToBuffer(cProcessedBuffer, 0, cProcessedBuffer.getNumSamples());
-	return cProcessedBuffer;
+	processedBuffer.applyGain(master);
+	controllerInfo.adsr.applyEnvelopeToBuffer(processedBuffer, 0, processedBuffer.getNumSamples());
+	return processedBuffer;
 }
 
 void CWGGrainController::setADSR(float attack, float decay, float sustain, float release) {

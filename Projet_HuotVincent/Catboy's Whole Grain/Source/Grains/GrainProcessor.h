@@ -7,7 +7,7 @@ class CWGGrainProcessor {
 public:
 	CWGGrainProcessor(GeneratorInfo x);
 
-	void process(juce::AudioBuffer<float>& buffer);
+	void process(juce::AudioBuffer<float>* const& buffer);
 
 	//Getters / setters
 	float getBufferPos() { return samplePos; };
@@ -21,5 +21,7 @@ public:
 
 private:
 	float samplePos;
-	float maxSampleCount;
+	const float maxSampleCount;
+	float nbSampleSkip;
+	float sampleLeft;
 };
