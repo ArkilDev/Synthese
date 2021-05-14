@@ -9,6 +9,7 @@ CWGGrainProcessor::CWGGrainProcessor(GeneratorInfo x) : maxSampleCount(x.grainLe
 
 	grainInfo.pan = (float)(rand() % 200 - 100) / 100.0f;
 
+	grainInfo.adsr.reset();
 	grainInfo.adsr.setSampleRate(grainInfo.sampleRate);
 	grainInfo.grainAdsrParam.sustain = 0;
 	grainInfo.grainAdsrParam.release = 0;
@@ -18,7 +19,8 @@ CWGGrainProcessor::CWGGrainProcessor(GeneratorInfo x) : maxSampleCount(x.grainLe
 	grainInfo.adsr.noteOn();
 }
 
-void CWGGrainProcessor::process(juce::AudioBuffer<float>* const& buffer) {
+void CWGGrainProcessor::process(juce::AudioBuffer<float>* buffer) {
+	float** bufferWritePointer = buffer->getArrayOfWritePointers();
 	const float* filePointer = 0;
 	float currentVal = 0;
 
@@ -55,8 +57,8 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>* const& buffer) {
 				}
 
 				//Set value in output buffer
-				temp = buffer->getSample(channel, i);
-				buffer->setSample(channel, i, buffer->getSample(channel, i) + (currentVal * grainInfo.volume));
+				bufferWritePointer[channel][i] += currentVal * grainInfo.volume;
+				//buffer->setSample(channel, i, buffer->getSample(channel, i) + (currentVal * grainInfo.volume));
 			}
 			samplePos += nbSampleSkip;
 			--sampleLeft;
@@ -65,5 +67,6 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>* const& buffer) {
 			grainInfo.adsr.noteOff();
 		}
 	}
+
 	grainInfo.adsr.applyEnvelopeToBuffer(*buffer, 0, buffer->getNumSamples());
 }

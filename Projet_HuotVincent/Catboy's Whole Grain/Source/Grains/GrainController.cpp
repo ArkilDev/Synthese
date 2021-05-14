@@ -26,6 +26,7 @@ void CWGGrainController::hiResTimerCallback() {
 
 //File systems
 void CWGGrainController::loadFile(const juce::String& filePath) {
+	fileBuffer.clear();
 	formatReader = formatManager.createReaderFor(filePath);
 
 	//make buffer big enough and clear buffer related variables
@@ -58,12 +59,10 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 		}
 	}
 
-	//Grain handling
+	//Voice handling
 	for (int i = 0; i < voices.size(); ++i)
 	{
 		auto* voice = voices.at(i);
-		//Process
-		auto temp = processedBuffer.getSample(0, 255);
 		voice->processGrains(&processedBuffer);
 
 		if (!voice->voiceInfo.adsr.isActive())

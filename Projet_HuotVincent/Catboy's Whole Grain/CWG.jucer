@@ -7,6 +7,9 @@
               companyName="Arkil">
   <MAINGROUP id="Dxne80" name="CWG">
     <GROUP id="{C2D83437-C103-346E-F43D-59050A2FFDE6}" name="Source">
+      <GROUP id="{6ECAE3BC-8263-ED19-2353-4C18460DC4F0}" name="Visuals">
+        <FILE id="uyfYtI" name="WaveformPanel.h" compile="0" resource="0" file="Source/Visuals/WaveformPanel.h"/>
+      </GROUP>
       <GROUP id="{59E86593-EA82-C027-5FE7-941A00450C07}" name="Grains">
         <FILE id="SdiFps" name="infoStruct.h" compile="0" resource="0" file="Source/Grains/infoStruct.h"/>
         <FILE id="hSAtCS" name="GrainProcessor.h" compile="0" resource="0"

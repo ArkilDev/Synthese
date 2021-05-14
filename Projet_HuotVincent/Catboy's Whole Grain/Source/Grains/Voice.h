@@ -7,7 +7,7 @@ class CWGVoice {
 public:
 	CWGVoice(GeneratorInfo x);
 	~CWGVoice();
-	void processGrains(juce::AudioBuffer<float>* const& buffer);
+	void processGrains(juce::AudioBuffer<float>* buffer);
 	void fakeTimerCallback();
 
 	void setPitch(float x) { voiceInfo.pitch = x; };

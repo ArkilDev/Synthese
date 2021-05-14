@@ -2050,6 +2050,7 @@
     <ClCompile Include="..\..\JuceLibraryCode\include_juce_gui_extra.cpp"/>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\Visuals\WaveformPanel.h"/>
     <ClInclude Include="..\..\Source\Grains\infoStruct.h"/>
     <ClInclude Include="..\..\Source\Grains\GrainProcessor.h"/>
     <ClInclude Include="..\..\Source\Grains\GrainController.h"/>

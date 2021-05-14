@@ -13,8 +13,6 @@
 CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	: AudioProcessorEditor(&p), audioProcessor(p)
 {
-	startTimerHz(60);
-
 	//Logo
 	auto logoImage = juce::ImageCache::getFromMemory(BinaryData::logo_png, BinaryData::logo_pngSize);
 
@@ -22,12 +20,12 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 		eLogoImage.setImage(logoImage, juce::RectanglePlacement::stretchToFit);
 	addAndMakeVisible(eLogoImage);
 
-	btnLoad.onClick = [&]() {audioProcessor.loadFile(); };
-	addAndMakeVisible(btnLoad);
+	waveformPanel.initiate(&audioProcessor, &eStartSlider);
+	addAndMakeVisible(waveformPanel);
 
 	//Main controls
 	eStartSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-	eStartSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eStartSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 1, 1);
 	eStartSlider.setRange(.0f, 1.0f, 0.001f);
 	eStartSlider.setValue(0);
 	eStartSlider.addListener(this);
@@ -81,17 +79,24 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	addAndMakeVisible(eReleaseSlider);
 
 	//Grain controls
-	eGrainLengthSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eGrainLengthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eGrainLengthSlider.setRange(1.0f, 500.0f, 0.1f);
+	eGrainLengthSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+	eGrainLengthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+	eGrainLengthSlider.setTextValueSuffix(" ms");
+	eGrainLengthSlider.setRange(1, 500, 1);
+	eGrainLengthSlider.setValue(150);
 	eGrainLengthSlider.addListener(this);
+	eGrainLengthLabel.setText("Length", juce::dontSendNotification);
+	eGrainLengthLabel.attachToComponent(&eGrainLengthSlider, false);
 	addAndMakeVisible(eGrainLengthSlider);
 
-	eGrainDensitySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eGrainDensitySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eGrainDensitySlider.setRange(1, 500, 1);
-	eGrainDensitySlider.setValue(1);
+	eGrainDensitySlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+	eGrainDensitySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
+	eGrainDensitySlider.setRange(20, 500, 1);
+	eGrainDensitySlider.setTextValueSuffix(" ms");
+	eGrainDensitySlider.setValue(75);
 	eGrainDensitySlider.addListener(this);
+	eGrainDensityLabel.setText("Density", juce::dontSendNotification);
+	eGrainDensityLabel.attachToComponent(&eGrainDensitySlider, false);
 	addAndMakeVisible(eGrainDensitySlider);
 
 	eGrainAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
@@ -106,83 +111,43 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	eGrainReleaseSlider.addListener(this);
 	addAndMakeVisible(eGrainReleaseSlider);
 
+	//Grain randomizer controls
+	eLengthRandKnob, ePosRandKnob, ePanRandKnob, eVolRandKnob;
+
 	setSize(1000, 600);
 }
 
-CWGAudioProcessorEditor::~CWGAudioProcessorEditor()
-{
-	stopTimer();
+CWGAudioProcessorEditor::~CWGAudioProcessorEditor() {
+
 }
 
 //==============================================================================
 void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 {
-	waveBox.setBounds(100, 100, 100, 100);
-	g.setColour(juce::Colours::aliceblue);
-	g.fillRect(waveBox);
-
-	g.fillAll(juce::Colours::black);
-	g.setColour(juce::Colours::white);
+	auto limit = getLocalBounds();
 	g.setFont(15.0f);
 
-	if (audioProcessor.controller.isFileLoaded()) {
-		//get waveform
-		auto wave = audioProcessor.controller.getFileBuffer();
-		float ratio = wave.getNumSamples() / getWidth();
-
-
-		if (eUpdateWaveDisplay) {
-			auto buffer = wave.getReadPointer(0);
-			eSampleVal.clear();
-
-
-			//scale x axis
-			for (int i = 0; i < wave.getNumSamples(); i += ratio) {
-				eSampleVal.push_back(buffer[i]); //get point in sample at ratio interval to make the length fit the window
-			}
-
-			//scale y axis and draw path
-			eWaveform.startNewSubPath(0, getHeight() / 2);
-			for (int i = 0; i < eSampleVal.size(); ++i) {
-				auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0); //Map amplitude from (-1, 1) to (minHeight, maxHeight)
-				eWaveform.lineTo(i, point);
-			}
-
-
-			eUpdateWaveDisplay = false;
-		}
-		g.strokePath(eWaveform, juce::PathStrokeType(2));
-
-		if (audioProcessor.controller.isFileLoaded()) {
-			for (int i = 0; i < audioProcessor.controller.voices.size(); ++i) {
-				CWGVoice* voice = audioProcessor.controller.voices.at(i);
-				for (int j = 0; j < voice->grains.size(); ++j) {
-					CWGGrainProcessor* grain = voice->grains.at(j);
-					auto playHeadPosition = juce::jmap<int>(std::floor(grain->getBufferPos()), 0, audioProcessor.getFileBuffer().getNumSamples(), 0, getWidth());
-					float Ypos = getHeight() / 2 + grain->grainInfo.pan * 100;
-					g.setColour(juce::Colours::blue);
-					g.fillRect((float)playHeadPosition, (float)Ypos, 20.0f, 10.0f);
-				}
-			}
-		}
-	}
+	g.setColour(juce::Colours::black);
+	g.fillRect(limit);
 }
+
+
 
 void CWGAudioProcessorEditor::resized()
 {
-	eLogoImage.setBoundsRelative(0.01f, 0.8f, 0.1f, 0.2f);
+	eLogoImage.setBoundsRelative(0.01, 0.8, 0.1, 0.2);
 
 	//Main controls
-	ePanSlider.setBoundsRelative(0.75f, 0.0f, 0.1f, 0.15f);
-	eMasterSlider.setBoundsRelative(0.85f, 0.0f, 0.15f, 0.1f);
-	ePitchSlider.setBoundsRelative(0.85f, 0.1f, 0.15f, 0.1f);
-	eStartSlider.setBoundsRelative(0, 0.5, 1, 0.1f);
+	ePanSlider.setBoundsRelative(0.75, 0.3, 0.1, 0.15);
+	eMasterSlider.setBoundsRelative(0.85, 0.3, 0.15, 0.1);
+	ePitchSlider.setBoundsRelative(0.85, 0.4, 0.15, 0.1);
+	eStartSlider.setBoundsRelative(0.01, 0.22, 0.8, 0.04);
 
 	//ADSR Slider Placements
-	const auto sliderX = 0.72f,
-		sliderY = 0.65f,
-		sliderWidth = 0.07f,
-		sliderHeight = 0.35f;
+	const float sliderX = 0.72,
+		sliderY = 0.65,
+		sliderWidth = 0.07,
+		sliderHeight = 0.35;
 
 	eAttackSlider.setBoundsRelative(sliderX, sliderY, sliderWidth, sliderHeight);
 	eDecaySlider.setBoundsRelative(sliderX + sliderWidth, sliderY, sliderWidth, sliderHeight);
@@ -190,16 +155,15 @@ void CWGAudioProcessorEditor::resized()
 	eReleaseSlider.setBoundsRelative(sliderX + (sliderWidth * 3), sliderY, sliderWidth, sliderHeight);
 
 	//Grain controls
-	eGrainLengthSlider.setBoundsRelative(0.15f, 0.8, 0.05f, 0.2f);
-	eGrainDensitySlider.setBoundsRelative(0.10f, 0.8, 0.05f, 0.2f);
-	eGrainAttackSlider.setBoundsRelative(0.25f, 0.8, 0.05f, 0.2f);
-	eGrainReleaseSlider.setBoundsRelative(0.3f, 0.8, 0.05f, 0.2f);
+	eGrainLengthSlider.setBoundsRelative(0.81, 0.05, 0.19, 0.05);
+	eGrainDensitySlider.setBoundsRelative(0.81, 0.15, 0.19, 0.05);
+	eGrainAttackSlider.setBoundsRelative(0.25, 0.8, 0.05, 0.2);
+	eGrainReleaseSlider.setBoundsRelative(0.3, 0.8, 0.05, 0.2);
 
-	//Other
-	btnLoad.setBoundsRelative(0, 0, 0.1f, 0.1f);
+	waveformPanel.setBoundsRelative(0.01, 0.01, 0.8, 0.2);
 }
 
-//File management ==============================================
+//Controllers ==============================================
 bool CWGAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& files) {
 	for (auto file : files) {
 		if (file.contains(".wav") || file.contains(".mp3") || file.contains(".aif")) {
@@ -212,7 +176,6 @@ bool CWGAudioProcessorEditor::isInterestedInFileDrag(const juce::StringArray& fi
 void CWGAudioProcessorEditor::filesDropped(const juce::StringArray& files, int x, int y) {
 	for (auto file : files) {
 		if (isInterestedInFileDrag(file)) {
-			eUpdateWaveDisplay = true;
 			audioProcessor.controller.loadFile(file);
 		}
 	}
@@ -226,8 +189,10 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 		audioProcessor.controller.setMaster(slider->getValue());
 	if (slider == &ePitchSlider)
 		audioProcessor.controller.setPitch(slider->getValue());
-	if (slider == &eStartSlider)
+	if (slider == &eStartSlider) {
 		audioProcessor.controller.setSampleStart(slider->getValue());
+		waveformPanel.repaint();
+	}
 	if (slider == &ePanSlider)
 		audioProcessor.controller.setMainPan(slider->getValue());
 
@@ -248,8 +213,4 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 		audioProcessor.controller.setGrainAttack(slider->getValue());
 	if (slider == &eGrainReleaseSlider)
 		audioProcessor.controller.setGrainRelease(slider->getValue());
-}
-
-void CWGAudioProcessorEditor::timerCallback() {
-	repaint();
 }

@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "Visuals/WaveformPanel.h"
 
 //==============================================================================
 /**
@@ -17,8 +18,7 @@
 class CWGAudioProcessorEditor :
 	public juce::AudioProcessorEditor,
 	public juce::FileDragAndDropTarget,
-	public juce::Slider::Listener,
-	public juce::Timer
+	public juce::Slider::Listener
 {
 public:
 	CWGAudioProcessorEditor(CWGAudioProcessor&);
@@ -34,33 +34,28 @@ public:
 
 	//Slider management
 	void sliderValueChanged(juce::Slider* slider) override;
-
-	//Timer
-	void timerCallback() override;
+	float getStartValue() { return eStartSlider.getValue(); };
 
 private:
-
+	CWGWaveformPanel waveformPanel;
 	juce::ImageComponent eLogoImage;
-
-	juce::Rectangle<float> waveBox;
-	juce::Path eWaveform;
-
-	juce::TextButton btnLoad{ "browse" };
-
-	std::vector<float> eSampleVal;
-	bool eUpdateWaveDisplay = false;
 
 	//Main controls
 	juce::Slider eStartSlider, eMasterSlider, ePitchSlider, ePanSlider;
-	juce::Label eStartLabel, eMasterLabel, ePitchLabel, ePanLabel;
+	juce::Label eMasterLabel, ePitchLabel, ePanLabel;
 
 	//ADSR
 	juce::Slider eAttackSlider, eDecaySlider, eSustainSlider, eReleaseSlider;
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;
 
-	//Grain controls
+	//Grain main controls
 	juce::Slider eGrainLengthSlider, eGrainDensitySlider, eGrainAttackSlider, eGrainReleaseSlider;
 	juce::Label eGrainLengthLabel, eGrainDensityLabel, eGrainAttackLabel, eGrainReleaseLabel;
+
+	//Grain randomizer controls
+	//Knobs are also handled by the Slider class :v
+	juce::Slider eLengthRandKnob, ePosRandKnob, ePanRandKnob, eVolRandKnob;
+	juce::Label eLengthRandLabel, ePosRandLabel, ePanRandLabel, eVolRandLabel;
 
 	CWGAudioProcessor& audioProcessor;
 

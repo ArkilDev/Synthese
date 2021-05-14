@@ -4,6 +4,7 @@ CWGVoice::CWGVoice(GeneratorInfo x) {
 	voiceInfo = x;
 	grains.reserve(100);
 	createGrain();
+	voiceInfo.adsr.reset();
 	voiceInfo.adsr.setParameters(voiceInfo.adsrParam);
 	voiceInfo.adsr.noteOn();
 	clock = 1;
@@ -13,19 +14,11 @@ CWGVoice::~CWGVoice() {
 	//Deconstructor
 }
 
-void CWGVoice::fakeTimerCallback() {
-	if (grains.size() < grains.capacity() && clock % voiceInfo.grainDensity == 0) {
-		createGrain();
-		clock = 1;
-	}
-	clock++;
-}
-
-void CWGVoice::processGrains(juce::AudioBuffer<float>* const& buffer) {
+void CWGVoice::processGrains(juce::AudioBuffer<float>* buffer)
+{
 	for (int i = 0; i < grains.size(); ++i)
 	{
 		auto* grain = grains.at(i);
-		auto temp = buffer->getSample(0, 255);
 		grain->process(buffer);
 		voiceInfo.adsr.applyEnvelopeToBuffer(*buffer, 0, buffer->getNumSamples());
 
@@ -42,6 +35,14 @@ void CWGVoice::processGrains(juce::AudioBuffer<float>* const& buffer) {
 			grains.erase(grains.begin() + i);
 		}
 	}
+}
+
+void CWGVoice::fakeTimerCallback() {
+	if (grains.size() < grains.capacity() && clock % voiceInfo.grainDensity == 0) {
+		createGrain();
+		clock = 1;
+	}
+	clock++;
 }
 
 void CWGVoice::createGrain() {
