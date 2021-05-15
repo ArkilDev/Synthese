@@ -1,14 +1,27 @@
 #include "GrainProcessor.h"
+#include <random>
 
 CWGGrainProcessor::CWGGrainProcessor(GeneratorInfo x) : maxSampleCount(x.grainLength* x.sampleRate / 1000) {
 	grainInfo = x;
-	samplePos = grainInfo.start;
 	sampleLeft = maxSampleCount;
 
 	nbSampleSkip = grainInfo.pitch + (std::pow(2.0, grainInfo.note / 12.0) / 32);
 
-	grainInfo.pan = (float)(rand() % 200 - 100) / 100.0f;
+	//Random
+	std::default_random_engine randEngine(rand());
+	std::uniform_int_distribution<int> randDist(0, grainInfo.file->getNumSamples() * grainInfo.randStart);
 
+	grainInfo.pan = (-1.0f + float(rand()) / float(RAND_MAX / 2)) * grainInfo.randPan;
+	grainInfo.volume = 1 - (float(rand()) / float(RAND_MAX) * grainInfo.randVol);
+	grainInfo.start += randDist(randEngine) - (grainInfo.file->getNumSamples() * grainInfo.randStart) / 2;
+
+	if (grainInfo.start < 0)
+		grainInfo.start = 0;
+	if (grainInfo.start > grainInfo.file->getNumSamples())
+		grainInfo.start = grainInfo.file->getNumSamples() - grainInfo.grainLength;
+	samplePos = grainInfo.start;
+
+	//ADSR
 	grainInfo.adsr.reset();
 	grainInfo.adsr.setSampleRate(grainInfo.sampleRate);
 	grainInfo.grainAdsrParam.sustain = 0;
@@ -23,13 +36,13 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>* buffer) {
 	float** bufferWritePointer = buffer->getArrayOfWritePointers();
 	const float* filePointer = 0;
 	float currentVal = 0;
-
 	auto temp = buffer->getNumSamples();
-	for (int i = 0; i < buffer->getNumSamples(); ++i) {
 
-		float adsrSample = 1 - grainInfo.adsr.getNextSample();
+	for (int i = 0; i < buffer->getNumSamples(); ++i) {
+		float adsrSample = grainInfo.adsr.getNextSample();
+
 		//If position not at the end of the sample nor the grain length
-		if (samplePos <= grainInfo.file->getNumSamples() && sampleLeft > 0) {
+		if (samplePos < grainInfo.file->getNumSamples() && sampleLeft > 0) {
 
 			//Linear interpolation
 			for (auto channel = 0; channel < buffer->getNumChannels(); ++channel) {
@@ -57,8 +70,7 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>* buffer) {
 				}
 
 				//Set value in output buffer
-				bufferWritePointer[channel][i] += currentVal * grainInfo.volume;
-				//buffer->setSample(channel, i, buffer->getSample(channel, i) + (currentVal * grainInfo.volume));
+				bufferWritePointer[channel][i] += currentVal * adsrSample * grainInfo.volume;
 			}
 			samplePos += nbSampleSkip;
 			--sampleLeft;
@@ -67,6 +79,4 @@ void CWGGrainProcessor::process(juce::AudioBuffer<float>* buffer) {
 			grainInfo.adsr.noteOff();
 		}
 	}
-
-	grainInfo.adsr.applyEnvelopeToBuffer(*buffer, 0, buffer->getNumSamples());
 }

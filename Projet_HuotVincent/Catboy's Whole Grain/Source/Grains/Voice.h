@@ -9,9 +9,7 @@ public:
 	~CWGVoice();
 	void processGrains(juce::AudioBuffer<float>* buffer);
 	void fakeTimerCallback();
-
 	void setPitch(float x) { voiceInfo.pitch = x; };
-	void setAdsrOff();
 
 	std::vector<CWGGrainProcessor*> grains;
 	GeneratorInfo voiceInfo;
@@ -22,8 +20,6 @@ private:
 	std::vector<CWGGrainProcessor*>::const_iterator grainIterator;
 	float grainLength = 1;
 	float grainStartSample;
-
-	float clockDelay = 100;
 
 	void createGrain();
 };

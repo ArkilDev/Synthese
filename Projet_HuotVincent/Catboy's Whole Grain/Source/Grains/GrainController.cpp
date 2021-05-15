@@ -5,7 +5,7 @@ CWGGrainController::CWGGrainController() {
 	//callback at every milisecond and let individual voices desides to run or not
 	HighResolutionTimer::startTimer(1);
 	voices.clear();
-	voices.reserve(16);
+	voices.reserve(8);
 	formatManager.registerBasicFormats();
 }
 
@@ -39,14 +39,13 @@ void CWGGrainController::loadFile(const juce::String& filePath) {
 }
 
 juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer midi) {
-	processedBuffer.clear();
-	processedBuffer.setSize(buffer->getNumChannels(), buffer->getNumSamples());
+	controllerInfo.processBuffer.clear();
+	controllerInfo.processBuffer.setSize(buffer->getNumChannels(), buffer->getNumSamples());
 
 	//Midi Handling
 	mIt = new juce::MidiBuffer::Iterator(midi);
 	while (mIt->getNextEvent(currentMessage, iteratorPos)) {
 		if (currentMessage.isNoteOn()) {
-			controllerInfo.adsr.noteOn();
 			controllerInfo.note = currentMessage.getNoteNumber();
 			controllerInfo.start = std::floor(startRatio * controllerInfo.file->getNumSamples());
 			voices.push_back(new CWGVoice(controllerInfo));
@@ -55,7 +54,7 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 		if (currentMessage.isNoteOff()) {
 			for (int i = 0; i < voices.size(); ++i)
 				if (voices.at(i)->voiceInfo.note == currentMessage.getNoteNumber())
-					voices.at(i)->setAdsrOff();
+					voices.at(i)->voiceInfo.adsr.noteOff();
 		}
 	}
 
@@ -63,15 +62,23 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 	for (int i = 0; i < voices.size(); ++i)
 	{
 		auto* voice = voices.at(i);
-		voice->processGrains(&processedBuffer);
+		voice->processGrains(&controllerInfo.processBuffer);
 
 		if (!voice->voiceInfo.adsr.isActive())
 			voices.erase(voices.begin() + i);
 	}
 
-	processedBuffer.applyGain(master);
-	controllerInfo.adsr.applyEnvelopeToBuffer(processedBuffer, 0, processedBuffer.getNumSamples());
-	return processedBuffer;
+	//Pan handling
+	if (controllerInfo.pan > 0) {
+		controllerInfo.processBuffer.applyGain(0, 0, controllerInfo.processBuffer.getNumSamples(), 1 - controllerInfo.pan);
+	}
+	else {
+		controllerInfo.processBuffer.applyGain(1, 0, controllerInfo.processBuffer.getNumSamples(), 1 - std::abs(controllerInfo.pan));
+	}
+
+	controllerInfo.processBuffer.applyGain(controllerInfo.volume);
+
+	return controllerInfo.processBuffer;
 }
 
 void CWGGrainController::setADSR(float attack, float decay, float sustain, float release) {
@@ -83,6 +90,7 @@ void CWGGrainController::setADSR(float attack, float decay, float sustain, float
 }
 
 void CWGGrainController::setPitch(float x) {
+	controllerInfo.pitch = x;
 	for (auto* voice : voices)
 		voice->setPitch(x);
 }

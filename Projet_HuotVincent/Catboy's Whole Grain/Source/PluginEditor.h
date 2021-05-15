@@ -54,8 +54,8 @@ private:
 
 	//Grain randomizer controls
 	//Knobs are also handled by the Slider class :v
-	juce::Slider eLengthRandKnob, ePosRandKnob, ePanRandKnob, eVolRandKnob;
-	juce::Label eLengthRandLabel, ePosRandLabel, ePanRandLabel, eVolRandLabel;
+	juce::Slider ePosRandKnob, ePanRandKnob, eVolRandKnob;
+	juce::Label ePosRandLabel, ePanRandLabel, eVolRandLabel;
 
 	CWGAudioProcessor& audioProcessor;
 

@@ -55,13 +55,13 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	//ADSR 
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eAttackSlider.setRange(.0f, 5.0f, 0.01f);
+	eAttackSlider.setRange(.0f, 1.0f, 0.01f);
 	eAttackSlider.addListener(this);
 	addAndMakeVisible(eAttackSlider);
 
 	eDecaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eDecaySlider.setRange(.0f, 5.0f, 0.01f);
+	eDecaySlider.setRange(.0f, 1.0f, 0.01f);
 	eDecaySlider.addListener(this);
 	addAndMakeVisible(eDecaySlider);
 
@@ -74,7 +74,7 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	eReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eReleaseSlider.setRange(.0f, 5.0f, 0.01f);
+	eReleaseSlider.setRange(.0f, 1.0f, 0.01f);
 	eReleaseSlider.addListener(this);
 	addAndMakeVisible(eReleaseSlider);
 
@@ -101,18 +101,45 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	eGrainAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eGrainAttackSlider.setRange(.0f, 1.0f, 0.01f);
+	eGrainAttackSlider.setRange(.01f, 1.0f, 0.01f);
+	eGrainAttackSlider.setValue(0.25);
 	eGrainAttackSlider.addListener(this);
 	addAndMakeVisible(eGrainAttackSlider);
 
 	eGrainReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
-	eGrainReleaseSlider.setRange(.0f, 1.0f, 0.01f);
+	eGrainReleaseSlider.setRange(.01f, 1.0f, 0.01f);
+	eGrainReleaseSlider.setValue(0.25);
 	eGrainReleaseSlider.addListener(this);
 	addAndMakeVisible(eGrainReleaseSlider);
 
 	//Grain randomizer controls
-	eLengthRandKnob, ePosRandKnob, ePanRandKnob, eVolRandKnob;
+	ePosRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	ePosRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePosRandKnob.setRange(0, 1, 0.01f);
+	ePosRandKnob.addListener(this);
+	ePosRandLabel.setText("Position random", juce::dontSendNotification);
+	ePosRandLabel.setJustificationType(juce::Justification::centred);
+	addAndMakeVisible(ePosRandLabel);
+	addAndMakeVisible(ePosRandKnob);
+
+	ePanRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	ePanRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePanRandKnob.setRange(0, 1, 0.01f);
+	ePanRandKnob.addListener(this);
+	ePanRandLabel.setText("Pan random", juce::dontSendNotification);
+	ePanRandLabel.setJustificationType(juce::Justification::centred);
+	addAndMakeVisible(ePanRandLabel);
+	addAndMakeVisible(ePanRandKnob);
+
+	eVolRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
+	eVolRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eVolRandKnob.setRange(0, 1, 0.01f);
+	eVolRandKnob.addListener(this);
+	eVolRandLabel.setText("Volume random", juce::dontSendNotification);
+	eVolRandLabel.setJustificationType(juce::Justification::centred);
+	addAndMakeVisible(eVolRandLabel);
+	addAndMakeVisible(eVolRandKnob);
 
 	setSize(1000, 600);
 }
@@ -160,6 +187,15 @@ void CWGAudioProcessorEditor::resized()
 	eGrainAttackSlider.setBoundsRelative(0.25, 0.8, 0.05, 0.2);
 	eGrainReleaseSlider.setBoundsRelative(0.3, 0.8, 0.05, 0.2);
 
+	//Grain randomizer controls
+	ePosRandKnob.setBoundsRelative(0.01, 0.3, 0.1, 0.2);
+	ePanRandKnob.setBoundsRelative(0.14, 0.3, 0.1, 0.2);
+	eVolRandKnob.setBoundsRelative(0.07, 0.5, 0.1, 0.2);
+
+	ePosRandLabel.setBoundsRelative(0.035, 0.28, 0.05, 0.2);
+	ePanRandLabel.setBoundsRelative(0.165, 0.28, 0.05, 0.2);
+	eVolRandLabel.setBoundsRelative(0.095, 0.48, 0.05, 0.2);
+
 	waveformPanel.setBoundsRelative(0.01, 0.01, 0.8, 0.2);
 }
 
@@ -186,15 +222,15 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 
 	//Main controls
 	if (slider == &eMasterSlider)
-		audioProcessor.controller.setMaster(slider->getValue());
+		audioProcessor.controller.controllerInfo.volume = slider->getValue();
 	if (slider == &ePitchSlider)
-		audioProcessor.controller.setPitch(slider->getValue());
+		audioProcessor.controller.setPitch(slider->getValue()); //use setPitch to change voices pitch dynamically
 	if (slider == &eStartSlider) {
-		audioProcessor.controller.setSampleStart(slider->getValue());
+		audioProcessor.controller.setSampleStart(slider->getValue()); //Need to use setSampleStart instead of controllerInfo for starting position
 		waveformPanel.repaint();
 	}
 	if (slider == &ePanSlider)
-		audioProcessor.controller.setMainPan(slider->getValue());
+		audioProcessor.controller.controllerInfo.pan = slider->getValue();
 
 	//ADSR
 	if (slider == &eAttackSlider || slider == &eDecaySlider
@@ -206,11 +242,19 @@ void CWGAudioProcessorEditor::sliderValueChanged(juce::Slider* slider) {
 
 	//Grain controls
 	if (slider == &eGrainLengthSlider)
-		audioProcessor.controller.setGrainLen(slider->getValue());
+		audioProcessor.controller.controllerInfo.grainLength = slider->getValue();
 	if (slider == &eGrainDensitySlider)
-		audioProcessor.controller.setGrainDensity(slider->getValue());
+		audioProcessor.controller.controllerInfo.grainDensity = slider->getValue();
 	if (slider == &eGrainAttackSlider)
-		audioProcessor.controller.setGrainAttack(slider->getValue());
+		audioProcessor.controller.controllerInfo.grainAdsrParam.attack = slider->getValue();
 	if (slider == &eGrainReleaseSlider)
-		audioProcessor.controller.setGrainRelease(slider->getValue());
+		audioProcessor.controller.controllerInfo.grainAdsrParam.decay = slider->getValue();
+
+	//Grain randomizer controls
+	if (slider == &ePosRandKnob)
+		audioProcessor.controller.controllerInfo.randStart = slider->getValue();
+	if (slider == &ePanRandKnob)
+		audioProcessor.controller.controllerInfo.randPan = slider->getValue();
+	if (slider == &eVolRandKnob)
+		audioProcessor.controller.controllerInfo.randVol = slider->getValue();
 }
