@@ -2,6 +2,9 @@
 
 <Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <Filter Include="CWG\Source\FX">
+      <UniqueIdentifier>{C2BD0BC9-FF3F-658F-5555-6C28C6255DD1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="CWG\Source\Visuals">
       <UniqueIdentifier>{ACE65058-C4A4-A828-4940-FC3C76679157}</UniqueIdentifier>
     </Filter>
@@ -2508,6 +2511,18 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Source\FX\Bitcrush.h">
+      <Filter>CWG\Source\FX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\FX\Distortion.h">
+      <Filter>CWG\Source\FX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\FX\FXBase.h">
+      <Filter>CWG\Source\FX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Visuals\FXPanel.h">
+      <Filter>CWG\Source\Visuals</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Source\Visuals\WaveformPanel.h">
       <Filter>CWG\Source\Visuals</Filter>
     </ClInclude>

@@ -32,21 +32,27 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	addAndMakeVisible(eStartSlider);
 
 	eMasterSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-	eMasterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eMasterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eMasterSlider.setRange(.0f, 1.0f, 0.01f);
 	eMasterSlider.setValue(1);
 	eMasterSlider.addListener(this);
+	eMasterLabel.setText("Volume", juce::dontSendNotification);
+	eMasterLabel.attachToComponent(&eMasterSlider, false);
+	eMasterLabel.setJustificationType(juce::Justification::left);
 	addAndMakeVisible(eMasterSlider);
 
 	ePitchSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
-	ePitchSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePitchSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 40, 20);
 	ePitchSlider.setRange(.0f, 1.0f, 0.01f);
 	ePitchSlider.setValue(0);
 	ePitchSlider.addListener(this);
+	ePitchLabel.setText("Pitch", juce::dontSendNotification);
+	ePitchLabel.attachToComponent(&ePitchSlider, false);
+	ePitchLabel.setJustificationType(juce::Justification::left);
 	addAndMakeVisible(ePitchSlider);
 
-	ePanSlider.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	ePanSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePanSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
+	ePanSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	ePanSlider.setRange(-1.0f, 1.0f, 0.01f);
 	ePanSlider.setValue(0);
 	ePanSlider.addListener(this);
@@ -54,28 +60,40 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	//ADSR 
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eAttackSlider.setRange(.0f, 1.0f, 0.01f);
 	eAttackSlider.addListener(this);
+	eAttackLabel.setText("Attack", juce::dontSendNotification);
+	eAttackLabel.attachToComponent(&eAttackSlider, false);
+	eAttackLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eAttackSlider);
 
 	eDecaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eDecaySlider.setRange(.0f, 1.0f, 0.01f);
 	eDecaySlider.addListener(this);
+	eDecayLabel.setText("Decay", juce::dontSendNotification);
+	eDecayLabel.attachToComponent(&eDecaySlider, false);
+	eDecayLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eDecaySlider);
 
 	eSustainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eSustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eSustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eSustainSlider.setRange(.0f, 1.0f, 0.01f);
 	eSustainSlider.setValue(1);
 	eSustainSlider.addListener(this);
+	eSustainLabel.setText("Sustain", juce::dontSendNotification);
+	eSustainLabel.attachToComponent(&eSustainSlider, false);
+	eSustainLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eSustainSlider);
 
 	eReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eReleaseSlider.setRange(.0f, 1.0f, 0.01f);
 	eReleaseSlider.addListener(this);
+	eReleaseLabel.setText("Release", juce::dontSendNotification);
+	eReleaseLabel.attachToComponent(&eReleaseSlider, false);
+	eReleaseLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eReleaseSlider);
 
 	//Grain controls
@@ -85,8 +103,9 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	eGrainLengthSlider.setRange(1, 500, 1);
 	eGrainLengthSlider.setValue(150);
 	eGrainLengthSlider.addListener(this);
-	eGrainLengthLabel.setText("Length", juce::dontSendNotification);
+	eGrainLengthLabel.setText("Grain Length", juce::dontSendNotification);
 	eGrainLengthLabel.attachToComponent(&eGrainLengthSlider, false);
+	eGrainLengthLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eGrainLengthSlider);
 
 	eGrainDensitySlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
@@ -95,27 +114,34 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	eGrainDensitySlider.setTextValueSuffix(" ms");
 	eGrainDensitySlider.setValue(75);
 	eGrainDensitySlider.addListener(this);
-	eGrainDensityLabel.setText("Density", juce::dontSendNotification);
+	eGrainDensityLabel.setText("Grain Density", juce::dontSendNotification);
 	eGrainDensityLabel.attachToComponent(&eGrainDensitySlider, false);
+	eGrainDensityLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eGrainDensitySlider);
 
 	eGrainAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eGrainAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eGrainAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eGrainAttackSlider.setRange(.01f, 1.0f, 0.01f);
 	eGrainAttackSlider.setValue(0.25);
 	eGrainAttackSlider.addListener(this);
+	eGrainAttackLabel.setText("Grain Attack", juce::dontSendNotification);
+	eGrainAttackLabel.attachToComponent(&eGrainAttackSlider, false);
+	eGrainAttackLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eGrainAttackSlider);
 
 	eGrainReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
-	eGrainReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eGrainReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eGrainReleaseSlider.setRange(.01f, 1.0f, 0.01f);
 	eGrainReleaseSlider.setValue(0.25);
 	eGrainReleaseSlider.addListener(this);
+	eGrainReleaseLabel.setText("Grain release", juce::dontSendNotification);
+	eGrainReleaseLabel.attachToComponent(&eGrainReleaseSlider, false);
+	eGrainReleaseLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eGrainReleaseSlider);
 
 	//Grain randomizer controls
 	ePosRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	ePosRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePosRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	ePosRandKnob.setRange(0, 1, 0.01f);
 	ePosRandKnob.addListener(this);
 	ePosRandLabel.setText("Position random", juce::dontSendNotification);
@@ -124,7 +150,7 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	addAndMakeVisible(ePosRandKnob);
 
 	ePanRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	ePanRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	ePanRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	ePanRandKnob.setRange(0, 1, 0.01f);
 	ePanRandKnob.addListener(this);
 	ePanRandLabel.setText("Pan random", juce::dontSendNotification);
@@ -133,7 +159,7 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	addAndMakeVisible(ePanRandKnob);
 
 	eVolRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
-	eVolRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, true, 40, 20);
+	eVolRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
 	eVolRandKnob.setRange(0, 1, 0.01f);
 	eVolRandKnob.addListener(this);
 	eVolRandLabel.setText("Volume random", juce::dontSendNotification);
@@ -158,21 +184,19 @@ void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 	g.fillRect(limit);
 }
 
-
-
 void CWGAudioProcessorEditor::resized()
 {
 	eLogoImage.setBoundsRelative(0.01, 0.8, 0.1, 0.2);
 
 	//Main controls
-	ePanSlider.setBoundsRelative(0.75, 0.3, 0.1, 0.15);
-	eMasterSlider.setBoundsRelative(0.85, 0.3, 0.15, 0.1);
-	ePitchSlider.setBoundsRelative(0.85, 0.4, 0.15, 0.1);
+	eMasterSlider.setBoundsRelative(0.81, 0.05, 0.19, 0.05);
+	ePanSlider.setBoundsRelative(0.81, 0.15, 0.19, 0.05);
+	ePitchSlider.setBoundsRelative(0.81, 0.25, 0.19, 0.05);
 	eStartSlider.setBoundsRelative(0.01, 0.22, 0.8, 0.04);
 
 	//ADSR Slider Placements
-	const float sliderX = 0.72,
-		sliderY = 0.65,
+	const float sliderX = 0.25,
+		sliderY = 0.35,
 		sliderWidth = 0.07,
 		sliderHeight = 0.35;
 
@@ -182,10 +206,11 @@ void CWGAudioProcessorEditor::resized()
 	eReleaseSlider.setBoundsRelative(sliderX + (sliderWidth * 3), sliderY, sliderWidth, sliderHeight);
 
 	//Grain controls
-	eGrainLengthSlider.setBoundsRelative(0.81, 0.05, 0.19, 0.05);
-	eGrainDensitySlider.setBoundsRelative(0.81, 0.15, 0.19, 0.05);
-	eGrainAttackSlider.setBoundsRelative(0.25, 0.8, 0.05, 0.2);
-	eGrainReleaseSlider.setBoundsRelative(0.3, 0.8, 0.05, 0.2);
+	eGrainLengthSlider.setBoundsRelative(0.62, 0.35, 0.38, 0.05);
+	eGrainDensitySlider.setBoundsRelative(0.62, 0.45, 0.38, 0.05);
+
+	eGrainAttackSlider.setBoundsRelative(0.52, 0.35, 0.1, 0.15);
+	eGrainReleaseSlider.setBoundsRelative(0.52, 0.55, 0.1, 0.15);
 
 	//Grain randomizer controls
 	ePosRandKnob.setBoundsRelative(0.01, 0.3, 0.1, 0.2);

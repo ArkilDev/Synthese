@@ -7,10 +7,17 @@
               companyName="Arkil">
   <MAINGROUP id="Dxne80" name="CWG">
     <GROUP id="{C2D83437-C103-346E-F43D-59050A2FFDE6}" name="Source">
+      <GROUP id="{EFF0EBDB-813C-B498-5B10-485CEAC27792}" name="FX">
+        <FILE id="EgCudm" name="Bitcrush.h" compile="0" resource="0" file="Source/FX/Bitcrush.h"/>
+        <FILE id="o9h0aF" name="Distortion.h" compile="0" resource="0" file="Source/FX/Distortion.h"/>
+        <FILE id="bsIj0F" name="FXBase.h" compile="0" resource="0" file="Source/FX/FXBase.h"/>
+      </GROUP>
       <GROUP id="{6ECAE3BC-8263-ED19-2353-4C18460DC4F0}" name="Visuals">
+        <FILE id="B6VK1w" name="FXPanel.h" compile="0" resource="0" file="Source/Visuals/FXPanel.h"/>
         <FILE id="uyfYtI" name="WaveformPanel.h" compile="0" resource="0" file="Source/Visuals/WaveformPanel.h"/>
       </GROUP>
       <GROUP id="{59E86593-EA82-C027-5FE7-941A00450C07}" name="Grains">
+        <GROUP id="{F39C0A8A-75C9-115D-9512-396172522634}" name="New Group"/>
         <FILE id="SdiFps" name="infoStruct.h" compile="0" resource="0" file="Source/Grains/infoStruct.h"/>
         <FILE id="hSAtCS" name="GrainProcessor.h" compile="0" resource="0"
               file="Source/Grains/GrainProcessor.h"/>
