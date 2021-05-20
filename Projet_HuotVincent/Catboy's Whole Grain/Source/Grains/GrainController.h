@@ -5,6 +5,10 @@
 #include <JuceHeader.h>
 #include "../Grains/infoStruct.h"
 #include "../Grains/Voice.h"
+#include "../FX/FXBase.h"
+
+#include "../FX/Distortion.h"
+#include "../FX/Bitcrush.h"
 
 class CWGGrainController : juce::HighResolutionTimer {
 public:
@@ -16,6 +20,8 @@ public:
 	void hiResTimerCallback() override;
 
 	juce::AudioBuffer<float> getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer midi);
+	void addFx(int id);
+	void removeFx(int id);
 
 	//gets and sets
 	void setSampleRate(double rate) { controllerInfo.sampleRate = rate; };
@@ -29,6 +35,7 @@ public:
 
 	GeneratorInfo controllerInfo;
 	std::vector<CWGVoice*> voices;
+	std::vector<CWGFx*> FXs;
 
 private:
 	//File related

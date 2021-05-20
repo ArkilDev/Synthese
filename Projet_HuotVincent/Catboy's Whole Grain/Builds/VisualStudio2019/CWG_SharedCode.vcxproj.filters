@@ -2520,7 +2520,13 @@
     <ClInclude Include="..\..\Source\FX\FXBase.h">
       <Filter>CWG\Source\FX</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Source\Visuals\FXPanel.h">
+    <ClInclude Include="..\..\Source\Visuals\FXListPanel.h">
+      <Filter>CWG\Source\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Visuals\FXSelector.h">
+      <Filter>CWG\Source\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Source\Visuals\FXViewerPanel.h">
       <Filter>CWG\Source\Visuals</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Source\Visuals\WaveformPanel.h">

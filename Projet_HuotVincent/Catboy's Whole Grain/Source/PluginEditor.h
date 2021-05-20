@@ -11,10 +11,11 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "Visuals/WaveformPanel.h"
+#include "Visuals/FXListPanel.h"
+#include "Visuals/FXViewerPanel.h"
 
 //==============================================================================
-/**
-*/
+
 class CWGAudioProcessorEditor :
 	public juce::AudioProcessorEditor,
 	public juce::FileDragAndDropTarget,
@@ -38,6 +39,8 @@ public:
 
 private:
 	CWGWaveformPanel waveformPanel;
+	CWGFXListPanel fxListPanel;
+	CWGFXViewerPanel fxPanel;
 	juce::ImageComponent eLogoImage;
 
 	//Main controls

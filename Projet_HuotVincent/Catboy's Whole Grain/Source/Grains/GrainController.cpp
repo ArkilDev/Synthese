@@ -6,11 +6,13 @@ CWGGrainController::CWGGrainController() {
 	HighResolutionTimer::startTimer(1);
 	voices.clear();
 	voices.reserve(8);
+	FXs.reserve(16);
 	formatManager.registerBasicFormats();
 }
 
 CWGGrainController::~CWGGrainController() {
 	formatReader = nullptr;
+	HighResolutionTimer::stopTimer();
 }
 
 void CWGGrainController::instantiate(juce::AudioBuffer<float>* buffer) {
@@ -79,6 +81,19 @@ juce::AudioBuffer<float> CWGGrainController::getProcessedBuffer(juce::AudioBuffe
 	controllerInfo.processBuffer.applyGain(controllerInfo.volume);
 
 	return controllerInfo.processBuffer;
+}
+
+void CWGGrainController::addFx(int id) {
+	std::string fxCountStr = std::to_string(FXs.size());
+	switch ((CWGFx::Type)id) {
+	default: break;
+	case CWGFx::Type::Bitcrush: FXs.push_back(new CWGBitcrush("Crush" + fxCountStr)); break;
+	case CWGFx::Type::Distortion: FXs.push_back(new CWGDistortion("Dist" + fxCountStr)); break;
+	}
+}
+
+void CWGGrainController::removeFx(int id) {
+	FXs.erase(FXs.begin() + id);
 }
 
 void CWGGrainController::setADSR(float attack, float decay, float sustain, float release) {

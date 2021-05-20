@@ -13,7 +13,9 @@
         <FILE id="bsIj0F" name="FXBase.h" compile="0" resource="0" file="Source/FX/FXBase.h"/>
       </GROUP>
       <GROUP id="{6ECAE3BC-8263-ED19-2353-4C18460DC4F0}" name="Visuals">
-        <FILE id="B6VK1w" name="FXPanel.h" compile="0" resource="0" file="Source/Visuals/FXPanel.h"/>
+        <FILE id="B6VK1w" name="FXListPanel.h" compile="0" resource="0" file="Source/Visuals/FXListPanel.h"/>
+        <FILE id="JYfomQ" name="FXSelector.h" compile="0" resource="0" file="Source/Visuals/FXSelector.h"/>
+        <FILE id="APTeBq" name="FXViewerPanel.h" compile="0" resource="0" file="Source/Visuals/FXViewerPanel.h"/>
         <FILE id="uyfYtI" name="WaveformPanel.h" compile="0" resource="0" file="Source/Visuals/WaveformPanel.h"/>
       </GROUP>
       <GROUP id="{59E86593-EA82-C027-5FE7-941A00450C07}" name="Grains">

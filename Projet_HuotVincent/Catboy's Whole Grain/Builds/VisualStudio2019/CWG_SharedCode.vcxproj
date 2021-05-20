@@ -2053,7 +2053,9 @@
     <ClInclude Include="..\..\Source\FX\Bitcrush.h"/>
     <ClInclude Include="..\..\Source\FX\Distortion.h"/>
     <ClInclude Include="..\..\Source\FX\FXBase.h"/>
-    <ClInclude Include="..\..\Source\Visuals\FXPanel.h"/>
+    <ClInclude Include="..\..\Source\Visuals\FXListPanel.h"/>
+    <ClInclude Include="..\..\Source\Visuals\FXSelector.h"/>
+    <ClInclude Include="..\..\Source\Visuals\FXViewerPanel.h"/>
     <ClInclude Include="..\..\Source\Visuals\WaveformPanel.h"/>
     <ClInclude Include="..\..\Source\Grains\infoStruct.h"/>
     <ClInclude Include="..\..\Source\Grains\GrainProcessor.h"/>

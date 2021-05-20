@@ -8,6 +8,8 @@
 
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
+#include "Visuals/FXListPanel.h"
+#include "Visuals/FXViewerPanel.h"
 
 //==============================================================================
 CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
@@ -22,6 +24,12 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 
 	waveformPanel.initiate(&audioProcessor, &eStartSlider);
 	addAndMakeVisible(waveformPanel);
+
+	fxListPanel.initiate(&audioProcessor, &fxPanel);
+	addAndMakeVisible(fxListPanel);
+
+	fxPanel.initiate(&audioProcessor.controller);
+	addAndMakeVisible(fxPanel);
 
 	//Main controls
 	eStartSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
@@ -222,6 +230,8 @@ void CWGAudioProcessorEditor::resized()
 	eVolRandLabel.setBoundsRelative(0.095, 0.48, 0.05, 0.2);
 
 	waveformPanel.setBoundsRelative(0.01, 0.01, 0.8, 0.2);
+	fxListPanel.setBoundsRelative(0.62, 0.55, 0.37, 0.44);
+	fxPanel.setBoundsRelative(0.12, 0.75, 0.48, 0.24);
 }
 
 //Controllers ==============================================

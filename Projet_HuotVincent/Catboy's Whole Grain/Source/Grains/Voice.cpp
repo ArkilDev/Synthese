@@ -10,10 +10,6 @@ CWGVoice::CWGVoice(GeneratorInfo x) {
 	clock = 1;
 }
 
-CWGVoice::~CWGVoice() {
-	//Deconstructor
-}
-
 void CWGVoice::processGrains(juce::AudioBuffer<float>* buffer)
 {
 	voiceInfo.processBuffer = *buffer;
