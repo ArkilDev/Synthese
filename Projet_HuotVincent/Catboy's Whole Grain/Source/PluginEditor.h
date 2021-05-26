@@ -28,6 +28,7 @@ public:
 	//==============================================================================
 	void paint(juce::Graphics&) override;
 	void resized() override;
+	void setupView();
 
 	//File management
 	bool isInterestedInFileDrag(const juce::StringArray& files) override;
@@ -38,6 +39,7 @@ public:
 	float getStartValue() { return eStartSlider.getValue(); };
 
 private:
+	bool isReady = false;
 	CWGWaveformPanel waveformPanel;
 	CWGFXListPanel fxListPanel;
 	CWGFXViewerPanel fxPanel;
@@ -45,20 +47,24 @@ private:
 
 	//Main controls
 	juce::Slider eStartSlider, eMasterSlider, ePitchSlider, ePanSlider;
-	juce::Label eMasterLabel, ePitchLabel, ePanLabel;
+	juce::Label	eMasterLabel, ePitchLabel, ePanLabel;
+	std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> startAth, masterAth, pitchAth, panAth;
 
 	//ADSR
 	juce::Slider eAttackSlider, eDecaySlider, eSustainSlider, eReleaseSlider;
 	juce::Label eAttackLabel, eDecayLabel, eSustainLabel, eReleaseLabel;
+	std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> attackAth, decayAth, sustainAth, releaseAth;
 
 	//Grain main controls
 	juce::Slider eGrainLengthSlider, eGrainDensitySlider, eGrainAttackSlider, eGrainReleaseSlider;
 	juce::Label eGrainLengthLabel, eGrainDensityLabel, eGrainAttackLabel, eGrainReleaseLabel;
+	std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> grainLenAth, grainDensAth, grainAtkAth, grainRelAth;
 
 	//Grain randomizer controls
-	//Knobs are also handled by the Slider class :v
+	//Knobs are also handled by the Slider class for some reasons :v
 	juce::Slider ePosRandKnob, ePanRandKnob, eVolRandKnob;
 	juce::Label ePosRandLabel, ePanRandLabel, eVolRandLabel;
+	std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> posRandAth, panRandAth, volRandAth;
 
 	CWGAudioProcessor& audioProcessor;
 

@@ -5,15 +5,16 @@
 
 class CWGFXSelector : public juce::Component {
 public:
-	CWGFXSelector(CWGGrainController* c) {
+	CWGFXSelector(CWGGrainController* c, int i) {
 		setPaintingIsUnclipped(true);
 		controller = c;
 
 		CWGFx* fx = controller->FXs[controller->FXs.size() - 1];
 		name = fx->name;
-		id = controller->FXs.size() - 1;
+		id = i;
 
 		btnView.setButtonText("View");
+		btnView.onClick = [&] { changeView(id); };
 		addAndMakeVisible(btnView);
 
 		btnRemove.setButtonText("Remove");
@@ -36,8 +37,9 @@ public:
 	};
 
 	std::function<void()> removed;
+	std::function<void(int id)> changeView;
 
-	std::string name;
+	juce::String name;
 	int id;
 	juce::TextButton btnView;
 	juce::TextButton btnRemove;

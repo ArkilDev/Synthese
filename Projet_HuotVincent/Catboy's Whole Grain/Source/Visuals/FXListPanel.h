@@ -23,21 +23,19 @@ public:
 		controller = &processor->controller;
 		fxPanel = p;
 
+
 		btnAdd.onClick = [&] {
 			controller->addFx(fxList.getSelectedId() - 1);
-
-			selector.push_back(new CWGFXSelector(controller));
-			selector.at(selector.size() - 1)->removed = [&] {
-				updateFxList();
-			};
-			addAndMakeVisible(selector.at(selector.size() - 1), 1);
-			resized();
+			createNewSelector(controller->FXs.size() - 1);
 		};
 	};
 
 	void paint(juce::Graphics& g) override {
 		g.setColour(juce::Colours::darkgrey);
 		g.drawRect(getLocalBounds());
+
+		if (selector.size() != controller->FXs.size())
+			refresh();
 	};
 
 	void resized() override {
@@ -50,7 +48,24 @@ public:
 		fxList.setBoundsRelative(0.2, (float)fxCount / 10, 0.8, 0.1);
 	};
 
+	void createNewSelector(int id) {
+		selector.push_back(new CWGFXSelector(controller, id));
+		selector.at(selector.size() - 1)->removed = [&] { updateFxList(); };
+		selector.at(selector.size() - 1)->changeView = [&](int id) { fxPanel->setViewedFx(id); };
+		addAndMakeVisible(selector.at(selector.size() - 1));
+		resized();
+	}
+
+	void refresh() {
+		if (controller->FXs.size() != selector.size()) {
+			for (int i = 0; i < controller->FXs.size(); ++i) {
+				createNewSelector(i);
+			}
+		}
+	}
+
 	void updateFxList() {
+		fxPanel->setViewedFx(-1);
 		for (int i = 0; i < selector.size(); ++i) {
 			if (selector.at(i)->id == -1) {
 				delete selector.at(i);

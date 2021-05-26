@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="GSy9ZS" name="CWG" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              pluginVST3Category="Instrument" pluginCharacteristicsValue="pluginIsSynth"
+              pluginVST3Category="Instrument" pluginCharacteristicsValue="pluginIsSynth,pluginProducesMidiOut,pluginWantsMidiIn"
               pluginFormats="buildStandalone,buildVST,buildVST3" pluginName="Catboi's whole grain"
               companyName="Arkil">
   <MAINGROUP id="Dxne80" name="CWG">

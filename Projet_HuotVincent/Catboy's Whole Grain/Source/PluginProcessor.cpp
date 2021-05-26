@@ -20,7 +20,7 @@ CWGAudioProcessor::CWGAudioProcessor()
 #endif
 		.withOutput("Output", juce::AudioChannelSet::stereo(), true)
 #endif
-	)
+	), VTS(*this, nullptr, "APVTS", createParameters())
 #endif
 {
 
@@ -99,6 +99,43 @@ void CWGAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock)
 	// Use this method as the place to do any pre-playback
 	// initialisation that you need..
 	controller.setSampleRate(sampleRate);
+
+	controller.onFxAdd = [&] {
+		auto fx = controller.FXs.at(controller.FXs.size() - 1);
+		juce::ValueTree t("Fx");
+
+		t.setProperty("Name", juce::String(fx->name), nullptr);
+		t.setProperty("FxType", fx->type, nullptr);
+		t.setProperty("Wet", fx->wet, nullptr);
+		t.setProperty("Uid", fx->uid.toString(), nullptr);
+
+		switch (fx->type) {
+		case CWGFx::Type::Bitcrush:
+			t.setProperty("Crush", dynamic_cast<CWGBitcrush*>(fx)->crush, nullptr);
+			break;
+		case CWGFx::Type::Distortion:
+			t.setProperty("Drive", dynamic_cast<CWGDistortion*>(fx)->drive, nullptr);
+			t.setProperty("Range", dynamic_cast<CWGDistortion*>(fx)->range, nullptr);
+			break;
+		}
+
+		VTS.state.appendChild(t, nullptr);
+	};
+
+	controller.onFxRemove = [&](juce::Uuid uid) {
+		VTS.state.removeChild(VTS.state.getChildWithProperty("Uid", uid.toString()), nullptr);
+	};
+
+	controller.onFileLoad = [&](juce::String path) {
+		if (!VTS.state.getChildWithName("File").isValid()) {
+			juce::ValueTree t("File");
+			t.setProperty("Path", path, nullptr);
+			VTS.state.appendChild(t, nullptr);
+		}
+		else {
+			VTS.state.getChildWithName("File").setProperty("Path", path, nullptr);
+		}
+	};
 }
 
 void CWGAudioProcessor::releaseResources()
@@ -163,12 +200,23 @@ void CWGAudioProcessor::getStateInformation(juce::MemoryBlock& destData)
 	// You should use this method to store your parameters in the memory block.
 	// You could do that either as raw data, or use the XML or ValueTree classes
 	// as intermediaries to make it easy to save and load complex data.
+
+	std::unique_ptr<juce::XmlElement> xml(VTS.state.createXml());
+	copyXmlToBinary(*xml, destData);
 }
 
 void CWGAudioProcessor::setStateInformation(const void* data, int sizeInBytes)
 {
 	// You should use this method to restore your parameters from this memory block,
 	// whose contents will have been created by the getStateInformation() call.
+
+	std::unique_ptr<juce::XmlElement> parameters(getXmlFromBinary(data, sizeInBytes));
+	if (parameters != nullptr) {
+		if (parameters->hasTagName(VTS.state.getType())) {
+			VTS.state = juce::ValueTree::fromXml(*parameters);
+			controller.fromValueTree(VTS.state);
+		}
+	}
 }
 
 //==============================================================================
@@ -187,4 +235,26 @@ void CWGAudioProcessor::loadFile() {
 		auto file = chooser.getResult();
 		controller.loadFile(file.getFullPathName());
 	}
+}
+
+juce::AudioProcessorValueTreeState::ParameterLayout CWGAudioProcessor::createParameters() {
+	std::vector<std::unique_ptr<juce::RangedAudioParameter>> VTSParams;
+
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("START", "Start", .0f, 1.f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("MASTER", "Master", .0f, 1.f, 1.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("PITCH", "Pitch", .0f, 1.f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("PAN", "Pan", -1.f, 1.f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("ATTACK", "Attack", .01f, 1.f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("DECAY", "Decay", 0, 1.f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("SUSTAIN", "Sustain", 0, 1.f, 1.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("RELEASE", "Release", .01f, 1.f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("GRAIN_LEN", "grainLen", 1.f, 500.f, 150.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("GRAIN_DENS", "grainDens", 20.f, 500.0f, 75.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("GRAIN_ATK", "grainAtk", .01f, 1.0f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("GRAIN_REL", "grainRel", .01f, 1.0f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("RAND_POS", "randPos", .0f, 1.0f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("RAND_PAN", "randPan", 0.f, 1.0f, 0.f));
+	VTSParams.push_back(std::make_unique<juce::AudioParameterFloat>("RAND_VOL", "randVol", .0f, 1.0f, 0.f));
+
+	return { VTSParams.begin(), VTSParams.end() };
 }

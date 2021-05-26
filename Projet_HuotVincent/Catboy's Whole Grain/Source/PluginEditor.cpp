@@ -22,82 +22,74 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 		eLogoImage.setImage(logoImage, juce::RectanglePlacement::stretchToFit);
 	addAndMakeVisible(eLogoImage);
 
-	waveformPanel.initiate(&audioProcessor, &eStartSlider);
+	setupView();
 	addAndMakeVisible(waveformPanel);
-
-	fxListPanel.initiate(&audioProcessor, &fxPanel);
 	addAndMakeVisible(fxListPanel);
-
-	fxPanel.initiate(&audioProcessor.controller);
 	addAndMakeVisible(fxPanel);
 
 	//Main controls
+	startAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "START", eStartSlider);
 	eStartSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	eStartSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 1, 1);
-	eStartSlider.setRange(.0f, 1.0f, 0.001f);
-	eStartSlider.setValue(0);
 	eStartSlider.addListener(this);
 	addAndMakeVisible(eStartSlider);
 
+
+	masterAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "MASTER", eMasterSlider);
 	eMasterSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	eMasterSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eMasterSlider.setRange(.0f, 1.0f, 0.01f);
-	eMasterSlider.setValue(1);
 	eMasterSlider.addListener(this);
 	eMasterLabel.setText("Volume", juce::dontSendNotification);
 	eMasterLabel.attachToComponent(&eMasterSlider, false);
 	eMasterLabel.setJustificationType(juce::Justification::left);
 	addAndMakeVisible(eMasterSlider);
 
+	pitchAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "PITCH", ePitchSlider);
 	ePitchSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	ePitchSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 40, 20);
-	ePitchSlider.setRange(.0f, 1.0f, 0.01f);
-	ePitchSlider.setValue(0);
 	ePitchSlider.addListener(this);
 	ePitchLabel.setText("Pitch", juce::dontSendNotification);
 	ePitchLabel.attachToComponent(&ePitchSlider, false);
 	ePitchLabel.setJustificationType(juce::Justification::left);
 	addAndMakeVisible(ePitchSlider);
 
+	panAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "PAN", ePanSlider);
 	ePanSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	ePanSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	ePanSlider.setRange(-1.0f, 1.0f, 0.01f);
-	ePanSlider.setValue(0);
 	ePanSlider.addListener(this);
 	addAndMakeVisible(ePanSlider);
 
 	//ADSR 
+	attackAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "ATTACK", eAttackSlider);
 	eAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eAttackSlider.setRange(.0f, 1.0f, 0.01f);
 	eAttackSlider.addListener(this);
 	eAttackLabel.setText("Attack", juce::dontSendNotification);
 	eAttackLabel.attachToComponent(&eAttackSlider, false);
 	eAttackLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eAttackSlider);
 
+	decayAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "DECAY", eDecaySlider);
 	eDecaySlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eDecaySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eDecaySlider.setRange(.0f, 1.0f, 0.01f);
 	eDecaySlider.addListener(this);
 	eDecayLabel.setText("Decay", juce::dontSendNotification);
 	eDecayLabel.attachToComponent(&eDecaySlider, false);
 	eDecayLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eDecaySlider);
 
+	sustainAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "SUSTAIN", eSustainSlider);
 	eSustainSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eSustainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eSustainSlider.setRange(.0f, 1.0f, 0.01f);
-	eSustainSlider.setValue(1);
 	eSustainSlider.addListener(this);
 	eSustainLabel.setText("Sustain", juce::dontSendNotification);
 	eSustainLabel.attachToComponent(&eSustainSlider, false);
 	eSustainLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eSustainSlider);
 
+	releaseAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "RELEASE", eReleaseSlider);
 	eReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eReleaseSlider.setRange(.0f, 1.0f, 0.01f);
 	eReleaseSlider.addListener(this);
 	eReleaseLabel.setText("Release", juce::dontSendNotification);
 	eReleaseLabel.attachToComponent(&eReleaseSlider, false);
@@ -105,42 +97,38 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	addAndMakeVisible(eReleaseSlider);
 
 	//Grain controls
+	grainLenAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "GRAIN_LEN", eGrainLengthSlider);
 	eGrainLengthSlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	eGrainLengthSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
 	eGrainLengthSlider.setTextValueSuffix(" ms");
-	eGrainLengthSlider.setRange(1, 500, 1);
-	eGrainLengthSlider.setValue(150);
 	eGrainLengthSlider.addListener(this);
 	eGrainLengthLabel.setText("Grain Length", juce::dontSendNotification);
 	eGrainLengthLabel.attachToComponent(&eGrainLengthSlider, false);
 	eGrainLengthLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eGrainLengthSlider);
 
+	grainDensAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "GRAIN_DENS", eGrainDensitySlider);
 	eGrainDensitySlider.setSliderStyle(juce::Slider::SliderStyle::LinearHorizontal);
 	eGrainDensitySlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 60, 20);
-	eGrainDensitySlider.setRange(20, 500, 1);
 	eGrainDensitySlider.setTextValueSuffix(" ms");
-	eGrainDensitySlider.setValue(75);
 	eGrainDensitySlider.addListener(this);
 	eGrainDensityLabel.setText("Grain Density", juce::dontSendNotification);
 	eGrainDensityLabel.attachToComponent(&eGrainDensitySlider, false);
 	eGrainDensityLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eGrainDensitySlider);
 
+	grainAtkAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "GRAIN_ATK", eGrainAttackSlider);
 	eGrainAttackSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainAttackSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eGrainAttackSlider.setRange(.01f, 1.0f, 0.01f);
-	eGrainAttackSlider.setValue(0.25);
 	eGrainAttackSlider.addListener(this);
 	eGrainAttackLabel.setText("Grain Attack", juce::dontSendNotification);
 	eGrainAttackLabel.attachToComponent(&eGrainAttackSlider, false);
 	eGrainAttackLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(eGrainAttackSlider);
 
+	grainRelAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "GRAIN_REL", eGrainReleaseSlider);
 	eGrainReleaseSlider.setSliderStyle(juce::Slider::SliderStyle::LinearVertical);
 	eGrainReleaseSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eGrainReleaseSlider.setRange(.01f, 1.0f, 0.01f);
-	eGrainReleaseSlider.setValue(0.25);
 	eGrainReleaseSlider.addListener(this);
 	eGrainReleaseLabel.setText("Grain release", juce::dontSendNotification);
 	eGrainReleaseLabel.attachToComponent(&eGrainReleaseSlider, false);
@@ -148,27 +136,27 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	addAndMakeVisible(eGrainReleaseSlider);
 
 	//Grain randomizer controls
+	posRandAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "RAND_POS", ePosRandKnob);
 	ePosRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
 	ePosRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	ePosRandKnob.setRange(0, 1, 0.01f);
 	ePosRandKnob.addListener(this);
 	ePosRandLabel.setText("Position random", juce::dontSendNotification);
 	ePosRandLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(ePosRandLabel);
 	addAndMakeVisible(ePosRandKnob);
 
+	panRandAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "RAND_PAN", ePanRandKnob);
 	ePanRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
 	ePanRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	ePanRandKnob.setRange(0, 1, 0.01f);
 	ePanRandKnob.addListener(this);
 	ePanRandLabel.setText("Pan random", juce::dontSendNotification);
 	ePanRandLabel.setJustificationType(juce::Justification::centred);
 	addAndMakeVisible(ePanRandLabel);
 	addAndMakeVisible(ePanRandKnob);
 
+	volRandAth = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(audioProcessor.VTS, "RAND_VOL", eVolRandKnob);
 	eVolRandKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryHorizontalVerticalDrag);
 	eVolRandKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 40, 20);
-	eVolRandKnob.setRange(0, 1, 0.01f);
 	eVolRandKnob.addListener(this);
 	eVolRandLabel.setText("Volume random", juce::dontSendNotification);
 	eVolRandLabel.setJustificationType(juce::Justification::centred);
@@ -178,6 +166,12 @@ CWGAudioProcessorEditor::CWGAudioProcessorEditor(CWGAudioProcessor& p)
 	setSize(1000, 600);
 }
 
+void CWGAudioProcessorEditor::setupView() {
+	waveformPanel.initiate(&audioProcessor, &eStartSlider);
+	fxListPanel.initiate(&audioProcessor, &fxPanel);
+	fxPanel.instantiate(&audioProcessor);
+}
+
 CWGAudioProcessorEditor::~CWGAudioProcessorEditor() {
 
 }
@@ -185,6 +179,12 @@ CWGAudioProcessorEditor::~CWGAudioProcessorEditor() {
 //==============================================================================
 void CWGAudioProcessorEditor::paint(juce::Graphics& g)
 {
+	//Re-setup once the controller is loaded
+	if (audioProcessor.controller.isReady && !this->isReady) {
+		setupView();
+		isReady = true;
+	}
+
 	auto limit = getLocalBounds();
 	g.setFont(15.0f);
 

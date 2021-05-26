@@ -5,8 +5,8 @@
 #include <JuceHeader.h>
 #include "../Grains/infoStruct.h"
 #include "../Grains/Voice.h"
-#include "../FX/FXBase.h"
 
+#include "../FX/FXBase.h"
 #include "../FX/Distortion.h"
 #include "../FX/Bitcrush.h"
 
@@ -18,15 +18,20 @@ public:
 	~CWGGrainController();
 	void instantiate(juce::AudioBuffer<float>* buffer);
 	void hiResTimerCallback() override;
+	void fromValueTree(juce::ValueTree tree);
 
-	juce::AudioBuffer<float> getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer midi);
-	void addFx(int id);
+	juce::AudioBuffer<float> getProcessedBuffer(juce::AudioBuffer<float>* buffer, juce::MidiBuffer& midi);
+	void addFx(int id, bool callLambda = true);
 	void removeFx(int id);
+
+	std::function<void()> onFxAdd;
+	std::function<void(juce::Uuid uid)> onFxRemove;
+	std::function<void(juce::String path)> onFileLoad;
 
 	//gets and sets
 	void setSampleRate(double rate) { controllerInfo.sampleRate = rate; };
 	void setPitch(float x);
-	void loadFile(const juce::String& path);
+	void loadFile(const juce::String& path, bool callLambda = true);
 	bool isFileLoaded() { return hasFile; };
 
 	juce::AudioBuffer<float> getFileBuffer() { return *controllerInfo.file; };
@@ -36,6 +41,8 @@ public:
 	GeneratorInfo controllerInfo;
 	std::vector<CWGVoice*> voices;
 	std::vector<CWGFx*> FXs;
+
+	bool isReady = false;
 
 private:
 	//File related

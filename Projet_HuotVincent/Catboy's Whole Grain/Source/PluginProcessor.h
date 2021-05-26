@@ -58,11 +58,14 @@ public:
 	void loadFile();
 	juce::AudioBuffer<float> getFileBuffer() { return controller.getFileBuffer(); };
 
+	//Value Tree controls
+	juce::AudioProcessorValueTreeState VTS;
+
 	//Passed from PluginEditor to GrainController
 	CWGGrainController controller;
 
 private:
-	juce::Synthesiser pSynth;
+	juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
 
 	//==============================================================================
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CWGAudioProcessor)

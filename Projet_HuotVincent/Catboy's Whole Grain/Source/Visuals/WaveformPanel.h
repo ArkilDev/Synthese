@@ -30,9 +30,6 @@ public:
 	};
 
 	void paint(juce::Graphics& g) override {
-		g.setColour(juce::Colours::darkgrey);
-		g.drawRect(getLocalBounds());
-
 		if (controller->isFileLoaded()) {
 			drawWaveform(g);
 			btnLoad.setVisible(false);
@@ -40,6 +37,9 @@ public:
 		else {
 			btnLoad.setVisible(true);
 		}
+
+		g.setColour(juce::Colours::darkgrey);
+		g.drawRect(getLocalBounds());
 	}
 
 	void resized() override {
@@ -48,26 +48,14 @@ public:
 
 	void drawWaveform(juce::Graphics& g) {
 		//get waveform
+		g.setColour(juce::Colours::black);
+		g.fillRect(getLocalBounds());
 		g.setColour(juce::Colours::white);
-		wave = controller->getFileBuffer();
-		ratio = wave.getNumSamples() / getWidth();
-		auto buffer = wave.getArrayOfReadPointers();
 
+		//Get waveform if empty or on new file
+		controller->onFileLoad = [&](juce::String path) { loadNewWaveform(controller->getFileBuffer().getWritePointer(0)); };
+		if (controller->isFileLoaded() && waveform.isEmpty()) loadNewWaveform(controller->getFileBuffer().getWritePointer(0));
 
-		//Get waveform if empty
-		if (waveform.isEmpty()) {
-			eSampleVal.clear();
-			for (int i = 0; i < wave.getNumSamples(); i += ratio) {
-				eSampleVal.push_back(buffer[0][i]); //get point in sample at ratio interval to make the length fit the window
-			}
-
-			//scale y axis
-			waveform.startNewSubPath(0, getHeight() / 2);
-			for (int i = 0; i < eSampleVal.size(); ++i) {
-				auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0);
-				waveform.lineTo(i, point);
-			}
-		}
 		g.strokePath(waveform, juce::PathStrokeType(2));
 
 		//Draw start line
@@ -91,6 +79,26 @@ public:
 				}
 			}
 		}
+	}
+
+	void loadNewWaveform(float* buffer) {
+		wave = controller->getFileBuffer();
+		ratio = wave.getNumSamples() / getWidth();
+
+		eSampleVal.clear();
+		for (int i = 0; i < wave.getNumSamples(); i += ratio) {
+			eSampleVal.push_back(buffer[i]); //get point in sample at ratio interval to make the length fit the window
+		}
+
+		//scale y axis
+		waveform.clear();
+		waveform.startNewSubPath(0, getHeight() / 2);
+		for (int i = 0; i < eSampleVal.size(); ++i) {
+			auto point = juce::jmap<float>(eSampleVal[i], -1.0f, 1.0f, getHeight(), 0);
+			waveform.lineTo(i, point);
+		}
+
+		repaint();
 	}
 
 	juce::Slider* startSlider;
