@@ -1,0 +1,24 @@
+=== CATBOY'S WHOLE GRAINS ===
+Description : 
+Catboy's Whole Grain est un Plugin générateur audio qui se base
+sur le concept de grain. Un grain est un son très cours
+(quelques centaines de miliseconde au plus) qui prend tout son sens
+lorsque plusieurs grains ayant des options de départs légèrement variés
+se superposent. Le tout offre des son étrange et complex qui sont
+généralement très difficile a reproduire.
+
+Lien de la vidéo : https://cvmqc-my.sharepoint.com/:v:/g/personal/e_vhuot_etu_cvm_qc_ca/EdpSHEq4AKNHs2a80lyI7t8BZtpOCC0uU-2v2jJPbPBSrQ?e=Ne7ymG
+
+Location : Projet_HuotVincent/OPEN_ME/
+
+Installation Standalone (Nécessite un contrôleur MIDI):
+	-Dé-zipper CWG-EXE.zip
+	-Ouvrir "Audio/MIDI Settings" dans les options en haut à gauche
+	-Sélectionner la carte son approprié dans la section "OUTPUT"
+	-Cochez votre contrôleur dans la section "Active MIDI Inputs"
+
+Installation VST3 (Nécessite un DAW):
+	-Dé-zipper CWG-VST.zip
+	-Copier le fichier dans C:\Program Files\Common Files\VST3
+	 Ou un fichier VST3 custom si supporté par votre DAW
+	-Rafraîchir la liste de plugin de votre DAW
